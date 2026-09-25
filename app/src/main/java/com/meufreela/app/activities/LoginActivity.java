@@ -15,6 +15,8 @@ import com.meufreela.app.network.RetrofitClient;
 import com.meufreela.app.storage.TokenManager;
 import com.meufreela.app.utils.ValidacaoUtils;
 
+import org.json.JSONObject;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -43,7 +45,6 @@ public class LoginActivity extends AppCompatActivity {
         String email = binding.editEmail.getText().toString().trim();
         String senha = binding.editSenha.getText().toString();
 
-        // Validação local antes de chamar a API
         if (!ValidacaoUtils.emailValido(email)) {
             binding.editEmail.setError("E-mail inválido");
             return;
@@ -71,8 +72,17 @@ public class LoginActivity extends AppCompatActivity {
                             );
                             redirecionarPorTipo(dados.getUsuario().getTipo());
                         } else {
-                            Toast.makeText(LoginActivity.this,
-                                    "E-mail ou senha inválidos", Toast.LENGTH_SHORT).show();
+                            try {
+                                String erroJson = response.errorBody().string();
+                                JSONObject obj = new JSONObject(erroJson);
+                                String mensagem = obj.getString("mensagem");
+                                Toast.makeText(LoginActivity.this, mensagem,
+                                        Toast.LENGTH_LONG).show();
+                            } catch (Exception e) {
+                                Toast.makeText(LoginActivity.this,
+                                        "E-mail ou senha inválidos",
+                                        Toast.LENGTH_SHORT).show();
+                            }
                         }
                     }
 
