@@ -1,7 +1,9 @@
 package com.meufreela.app.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -13,6 +15,8 @@ import com.meufreela.app.network.ApiService;
 import com.meufreela.app.network.RetrofitClient;
 import com.meufreela.app.storage.TokenManager;
 import com.meufreela.app.utils.ValidacaoUtils;
+
+import org.json.JSONObject;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -106,9 +110,17 @@ public class CadastroActivity extends AppCompatActivity {
                             "Conta criada com sucesso!", Toast.LENGTH_SHORT).show();
                     irParaHome(dados.getUsuario().getTipo());
                 } else {
-                    Toast.makeText(CadastroActivity.this,
-                            "Erro ao cadastrar. Verifique os dados.",
-                            Toast.LENGTH_LONG).show();
+                    try {
+                        String erroJson = response.errorBody().string();
+                        JSONObject obj = new JSONObject(erroJson);
+                        String mensagem = obj.getString("mensagem");
+                        Toast.makeText(CadastroActivity.this, mensagem,
+                                Toast.LENGTH_LONG).show();
+                    } catch (Exception e) {
+                        Toast.makeText(CadastroActivity.this,
+                                "Erro ao cadastrar. Tente novamente.",
+                                Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
 
@@ -127,14 +139,14 @@ public class CadastroActivity extends AppCompatActivity {
                 ? MainFreelancerActivity.class
                 : MainClienteActivity.class;
 
-        android.content.Intent intent = new android.content.Intent(this, destino);
-        intent.setFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK
-                | android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        Intent intent = new Intent(this, destino);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
     }
 
-    private String texto(android.widget.EditText edit) {
+    private String texto(EditText edit) {
         return edit.getText() != null ? edit.getText().toString().trim() : "";
     }
 

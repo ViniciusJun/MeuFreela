@@ -9,9 +9,9 @@ import retrofit2.http.Body;
 import retrofit2.http.POST;
 
 public interface ApiService {
-    @POST("auth/login")
+    @POST("auth/login")     // → http://10.0.2.2:8080/api/auth/login
     Call<LoginResponse> login(@Body LoginRequest request);
 
-    @POST("auth/cadastro")
+    @POST("auth/cadastro")  // → http://10.0.2.2:8080/api/auth/cadastro
     Call<LoginResponse> cadastrar(@Body CadastroRequest request);
 }
