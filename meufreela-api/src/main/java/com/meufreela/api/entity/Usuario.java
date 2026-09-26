@@ -12,7 +12,11 @@ import java.util.List;
 
 @Entity
 @Table(name = "usuarios")
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder  // ← obrigatórias
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Usuario implements UserDetails {
 
     @Id
@@ -26,7 +30,7 @@ public class Usuario implements UserDetails {
     private String email;
 
     @Column(nullable = false)
-    private String senha; // sempre armazenada com BCrypt
+    private String senha;
 
     @Column(nullable = false, length = 11)
     private String cpf;
@@ -36,18 +40,39 @@ public class Usuario implements UserDetails {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private TipoUsuario tipo; // CLIENTE ou FREELANCER
+    private TipoUsuario tipo;
 
     @Column(nullable = false)
-    private boolean verificado = false; // KYC
+    private boolean verificado = false;
+
+    // ============ Campos exclusivos de FREELANCER ============
+
+    @Enumerated(EnumType.STRING)
+    private CategoriaServico categoria;
+
+    @Column(length = 500)
+    private String descricao;
+
+    private Double precoHora;
+
+    private Double avaliacaoMedia = 0.0;
+
+    private Integer totalServicos = 0;
+
+    private Double latitude;
+
+    private Double longitude;
 
     private LocalDateTime criadoEm = LocalDateTime.now();
 
+    // ============ Enum de tipo de usuário ============
+
     public enum TipoUsuario {
-        CLIENTE, FREELANCER
+        CLIENTE,
+        FREELANCER
     }
 
-    // ----- UserDetails -----
+    // ============ UserDetails ============
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
