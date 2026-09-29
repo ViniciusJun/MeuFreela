@@ -25,6 +25,8 @@
         <activity android:name=".activities.CadastroActivity" android:exported="false" />
         <activity android:name=".activities.MainClienteActivity" android:exported="false" />
         <activity android:name=".activities.MainFreelancerActivity" android:exported="false" />
+        <activity android:name=".activities.DetalheFreelancerActivity" android:exported="false" />
+        <activity android:name=".activities.NovaSolicitacaoActivity" android:exported="false" />
 
     </application>
 </manifest>

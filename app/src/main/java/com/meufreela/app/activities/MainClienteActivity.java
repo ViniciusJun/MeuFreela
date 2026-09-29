@@ -1,5 +1,6 @@
 package com.meufreela.app.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -118,7 +119,11 @@ public class MainClienteActivity extends AppCompatActivity {
     }
 
     private void abrirDetalhes(Freelancer f) {
-        // Na próxima fase abriremos a tela de detalhes
-        Toast.makeText(this, "Você clicou em " + f.getNome(), Toast.LENGTH_SHORT).show();
+        Intent i = new Intent(this, DetalheFreelancerActivity.class);
+        i.putExtra(DetalheFreelancerActivity.EXTRA_ID, f.getId());
+        i.putExtra(DetalheFreelancerActivity.EXTRA_NOME, f.getNome());
+        i.putExtra(DetalheFreelancerActivity.EXTRA_PRECO,
+                f.getPrecoHora() != null ? f.getPrecoHora() : 0.0);
+        startActivity(i);
     }
 }

@@ -63,7 +63,13 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGenerico(Exception ex) {
-        System.err.println("Erro não tratado: " + ex.getMessage());
+        // ✅ Loga stacktrace completo no console do backend
+        System.err.println("========================================");
+        System.err.println("ERRO NÃO TRATADO: " + ex.getClass().getName());
+        System.err.println("Mensagem: " + ex.getMessage());
+        ex.printStackTrace(System.err);
+        System.err.println("========================================");
+
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(erro("Erro interno do servidor", 500));
