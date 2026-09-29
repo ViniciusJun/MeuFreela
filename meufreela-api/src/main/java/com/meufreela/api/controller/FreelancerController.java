@@ -29,4 +29,12 @@ public class FreelancerController {
                 freelancers.stream().map(FreelancerResumo::from).toList()
         );
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<FreelancerResumo> detalhe(@PathVariable String id) {
+        return repository.findById(id)
+                .filter(u -> u.getTipo() == Usuario.TipoUsuario.FREELANCER)
+                .map(u -> ResponseEntity.ok(FreelancerResumo.from(u)))
+                .orElse(ResponseEntity.notFound().build());
+    }
 }

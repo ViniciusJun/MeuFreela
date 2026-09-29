@@ -43,6 +43,7 @@ public class Usuario implements UserDetails {
     private TipoUsuario tipo;
 
     @Column(nullable = false)
+    @Builder.Default
     private boolean verificado = false;
 
     // ============ Campos exclusivos de FREELANCER ============
@@ -55,14 +56,18 @@ public class Usuario implements UserDetails {
 
     private Double precoHora;
 
+    @Builder.Default
     private Double avaliacaoMedia = 0.0;
 
+    @Builder.Default
     private Integer totalServicos = 0;
 
     private Double latitude;
 
     private Double longitude;
 
+    @Column(nullable = false, updatable = false)
+    @Builder.Default
     private LocalDateTime criadoEm = LocalDateTime.now();
 
     // ============ Enum de tipo de usuário ============
