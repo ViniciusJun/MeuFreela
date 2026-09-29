@@ -12,6 +12,7 @@ import com.meufreela.app.models.response.Freelancer;
 import com.meufreela.app.network.ApiService;
 import com.meufreela.app.network.RetrofitClient;
 import com.meufreela.app.storage.TokenManager;
+import com.meufreela.app.utils.MenuUtils;
 
 import java.util.Locale;
 
@@ -75,6 +76,8 @@ public class DetalheFreelancerActivity extends AppCompatActivity {
             i.putExtra(NovaSolicitacaoActivity.EXTRA_FREELANCER_PRECO, preco);
             startActivity(i);
         });
+
+        binding.botaoMenu.setOnClickListener(v -> MenuUtils.mostrar(this, v));
     }
 
     private String rotuloCategoria(String c) {

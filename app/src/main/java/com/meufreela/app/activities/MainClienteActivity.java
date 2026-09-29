@@ -16,6 +16,7 @@ import com.meufreela.app.models.response.Freelancer;
 import com.meufreela.app.network.ApiService;
 import com.meufreela.app.network.RetrofitClient;
 import com.meufreela.app.storage.TokenManager;
+import com.meufreela.app.utils.MenuUtils;
 
 import java.util.List;
 
@@ -50,6 +51,7 @@ public class MainClienteActivity extends AppCompatActivity {
         tokenManager = new TokenManager(this);
         apiService = RetrofitClient.getApiService(tokenManager);
 
+        // Configuração do RecyclerView
         adapter = new FreelancerAdapter(this::abrirDetalhes);
         binding.recyclerFreelancers.setLayoutManager(new LinearLayoutManager(this));
         binding.recyclerFreelancers.setAdapter(adapter);
@@ -57,11 +59,16 @@ public class MainClienteActivity extends AppCompatActivity {
         montarChipsCategorias();
         carregarFreelancers("");
 
+        //Botão minhas solicitações
         binding.botaoMinhasSolicitacoes.setOnClickListener(v ->
                 startActivity(new Intent(this, MinhasSolicitacoesActivity.class)));
+
+        //Botão menu
+        binding.botaoMenu.setOnClickListener(v -> MenuUtils.mostrar(this, v, false));
     }
 
     private void montarChipsCategorias() {
+        // Limpa os chips existentes
         binding.containerCategorias.removeAllViews();
 
         for (String[] cat : CATEGORIAS) {
@@ -91,6 +98,7 @@ public class MainClienteActivity extends AppCompatActivity {
     }
 
     private void carregarFreelancers(String categoria) {
+        // Mostra a barra de progresso
         binding.progressBar.setVisibility(View.VISIBLE);
 
         String filtro = categoria.isEmpty() ? null : categoria;
@@ -112,6 +120,7 @@ public class MainClienteActivity extends AppCompatActivity {
                 }
             }
 
+            // Caso ocorra algum erro na requisição, mostra uma mensagem de erro
             @Override
             public void onFailure(Call<List<Freelancer>> call, Throwable t) {
                 binding.progressBar.setVisibility(View.GONE);
@@ -122,6 +131,7 @@ public class MainClienteActivity extends AppCompatActivity {
     }
 
     private void abrirDetalhes(Freelancer f) {
+        // Abre a tela de detalhes do profissional
         Intent i = new Intent(this, DetalheFreelancerActivity.class);
         i.putExtra(DetalheFreelancerActivity.EXTRA_ID, f.getId());
         i.putExtra(DetalheFreelancerActivity.EXTRA_NOME, f.getNome());

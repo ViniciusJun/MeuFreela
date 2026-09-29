@@ -5,6 +5,7 @@ import com.meufreela.app.models.request.CriarSolicitacaoRequest;
 import com.meufreela.app.models.request.LoginRequest;
 import com.meufreela.app.models.response.Freelancer;
 import com.meufreela.app.models.response.LoginResponse;
+import com.meufreela.app.models.response.PerfilUsuario;
 import com.meufreela.app.models.response.Solicitacao;
 
 import java.util.List;
@@ -47,4 +48,6 @@ public interface ApiService {
     Call<Solicitacao> atualizarStatus(
             @Path("id") String id,
             @Query("status") String novoStatus);
+    @GET("usuarios/me")
+    Call<PerfilUsuario> meuPerfil();
 }
