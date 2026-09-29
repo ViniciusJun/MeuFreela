@@ -13,6 +13,7 @@ import com.meufreela.app.models.response.Solicitacao;
 import com.meufreela.app.network.ApiService;
 import com.meufreela.app.network.RetrofitClient;
 import com.meufreela.app.storage.TokenManager;
+import com.meufreela.app.utils.MenuUtils;
 
 import java.util.List;
 
@@ -39,6 +40,9 @@ public class MainFreelancerActivity extends AppCompatActivity
         adapter = new SolicitacaoAdapter(this, true);
         binding.recyclerSolicitacoes.setLayoutManager(new LinearLayoutManager(this));
         binding.recyclerSolicitacoes.setAdapter(adapter);
+
+        //Botão de menu
+        binding.botaoMenu.setOnClickListener(v -> MenuUtils.mostrar(this, v, true));
     }
 
     @Override
