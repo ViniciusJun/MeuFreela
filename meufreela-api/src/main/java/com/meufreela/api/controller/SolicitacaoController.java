@@ -20,6 +20,7 @@ public class SolicitacaoController {
 
     private final SolicitacaoService service;
 
+    /** Cliente cria uma nova solicitação. */
     @PostMapping
     public ResponseEntity<SolicitacaoResumo> criar(
             Authentication auth,
@@ -28,18 +29,24 @@ public class SolicitacaoController {
                 .body(service.criar(auth.getName(), request));
     }
 
+    /** Lista solicitações do cliente logado. */
     @GetMapping("/como-cliente")
     public ResponseEntity<List<SolicitacaoResumo>> comoCliente(Authentication auth) {
         return ResponseEntity.ok(service.minhasComoCliente(auth.getName()));
     }
 
+    /** Lista solicitações do freelancer logado. */
     @GetMapping("/como-freelancer")
     public ResponseEntity<List<SolicitacaoResumo>> comoFreelancer(Authentication auth) {
         return ResponseEntity.ok(service.minhasComoFreelancer(auth.getName()));
     }
 
+    /**
+     * Atualiza o status de uma solicitação.
+     * Ex.: PATCH /api/solicitacoes/{id}/status?status=ACEITA
+     */
     @PatchMapping("/{id}/status")
-    public ResponseEntity<SolicitacaoResumo> atualizar(
+    public ResponseEntity<SolicitacaoResumo> atualizarStatus(
             Authentication auth,
             @PathVariable String id,
             @RequestParam StatusSolicitacao status) {

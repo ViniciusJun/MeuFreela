@@ -56,6 +56,9 @@ public class MainClienteActivity extends AppCompatActivity {
 
         montarChipsCategorias();
         carregarFreelancers("");
+
+        binding.botaoMinhasSolicitacoes.setOnClickListener(v ->
+                startActivity(new Intent(this, MinhasSolicitacoesActivity.class)));
     }
 
     private void montarChipsCategorias() {
