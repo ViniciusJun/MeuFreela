@@ -27,6 +27,7 @@
         <activity android:name=".activities.MainFreelancerActivity" android:exported="false" />
         <activity android:name=".activities.DetalheFreelancerActivity" android:exported="false" />
         <activity android:name=".activities.NovaSolicitacaoActivity" android:exported="false" />
+        <activity android:name=".activities.MinhasSolicitacoesActivity" android:exported="false" />
 
     </application>
 </manifest>

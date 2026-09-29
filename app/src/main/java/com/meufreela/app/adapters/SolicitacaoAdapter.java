@@ -4,9 +4,6 @@ import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -14,29 +11,30 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.meufreela.app.databinding.ItemSolicitacaoBinding;
 import com.meufreela.app.models.response.Solicitacao;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.TimeZone;
 
 public class SolicitacaoAdapter extends RecyclerView.Adapter<SolicitacaoAdapter.VH> {
 
-    public interface AcaoListener {
-        void onAcao(Solicitacao s, String novoStatus);
+    public interface Acoes {
+        void aceitar(Solicitacao s);
+        void recusar(Solicitacao s);
     }
 
     private final List<Solicitacao> itens = new ArrayList<>();
-    private final AcaoListener listener;
+    private final Acoes acoes;
+    private final boolean ehFreelancer; // se true, mostra botões Aceitar/Recusar
 
-    public SolicitacaoAdapter(AcaoListener listener) {
-        this.listener = listener;
+    public SolicitacaoAdapter(Acoes acoes, boolean ehFreelancer) {
+        this.acoes = acoes;
+        this.ehFreelancer = ehFreelancer;
     }
 
-    public void setItens(List<Solicitacao> novos) {
+    public void setItens(List<Solicitacao> novas) {
         itens.clear();
-        itens.addAll(novos);
+        itens.addAll(novas);
         notifyDataSetChanged();
     }
 
@@ -50,121 +48,75 @@ public class SolicitacaoAdapter extends RecyclerView.Adapter<SolicitacaoAdapter.
 
     @Override
     public void onBindViewHolder(@NonNull VH h, int position) {
-        h.bind(itens.get(position));
+        Solicitacao s = itens.get(position);
+
+        // Nome exibido: para o freelancer, o cliente; para o cliente, o freelancer
+        String nome = ehFreelancer ? s.getClienteNome() : s.getFreelancerNome();
+        h.binding.textNome.setText(nome);
+
+        h.binding.textDescricao.setText(s.getDescricao());
+        h.binding.textEndereco.setText("📍 " + s.getEndereco());
+
+        String dataFormatada = formatarData(s.getDataDesejada());
+        h.binding.textData.setText("🗓 " + dataFormatada
+                + " · " + (s.getDuracaoHoras() != null ? s.getDuracaoHoras() : 0) + "h");
+
+        double valor = s.getValorTotal() != null ? s.getValorTotal() : 0;
+        h.binding.textValor.setText(String.format(Locale.getDefault(), "R$ %.2f", valor));
+
+        aplicarStatus(h.binding, s.getStatus());
+
+        // Botões só para o freelancer e quando PENDENTE
+        boolean mostrarBotoes = ehFreelancer && "PENDENTE".equals(s.getStatus());
+        h.binding.containerAcoes.setVisibility(mostrarBotoes ? View.VISIBLE : View.GONE);
+
+        h.binding.botaoAceitar.setOnClickListener(v -> acoes.aceitar(s));
+        h.binding.botaoRecusar.setOnClickListener(v -> acoes.recusar(s));
     }
 
     @Override
     public int getItemCount() { return itens.size(); }
 
-    class VH extends RecyclerView.ViewHolder {
-        private final ItemSolicitacaoBinding b;
-
-        VH(ItemSolicitacaoBinding b) {
-            super(b.getRoot());
-            this.b = b;
+    private void aplicarStatus(ItemSolicitacaoBinding b, String status) {
+        int cor;
+        String rotulo;
+        switch (status) {
+            case "PENDENTE":
+                rotulo = "PENDENTE"; cor = 0xFFFFA000; break;
+            case "ACEITA":
+                rotulo = "ACEITA"; cor = 0xFF2196F3; break;
+            case "EM_ANDAMENTO":
+                rotulo = "EM ANDAMENTO"; cor = 0xFF03A9F4; break;
+            case "CONCLUIDA":
+                rotulo = "CONCLUÍDA"; cor = 0xFF4CAF50; break;
+            case "RECUSADA":
+                rotulo = "RECUSADA"; cor = 0xFFF44336; break;
+            case "CANCELADA":
+                rotulo = "CANCELADA"; cor = 0xFF9E9E9E; break;
+            case "PAGA":
+                rotulo = "PAGA"; cor = 0xFF4CAF50; break;
+            default:
+                rotulo = status; cor = 0xFF9E9E9E;
         }
+        b.textStatus.setText(rotulo);
+        b.textStatus.setTextColor(Color.WHITE);
+        b.textStatus.setBackgroundColor(cor);
+    }
 
-        void bind(Solicitacao s) {
-            b.textCliente.setText(s.getClienteNome());
-            b.textDescricao.setText(s.getDescricao());
-            b.textEndereco.setText(s.getEndereco());
-
-            // Data formatada (backend envia ISO-8601 sem timezone)
-            String data = formatarData(s.getDataDesejada());
-            Integer dur = s.getDuracaoHoras() != null ? s.getDuracaoHoras() : 0;
-            b.textData.setText("📅 " + data + "  ·  ⏱ " + dur + "h");
-
-            double valor = s.getValorTotal() != null ? s.getValorTotal() : 0;
-            b.textValor.setText(String.format(Locale.getDefault(), "R$ %.2f", valor));
-
-            aplicarEstiloStatus(s.getStatus());
-            montarBotoes(s);
+    private String formatarData(String iso) {
+        if (iso == null) return "—";
+        try {
+            // backend envia algo como "2026-10-15T14:00:00"
+            SimpleDateFormat entrada = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US);
+            SimpleDateFormat saida = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
+            return saida.format(entrada.parse(iso));
+        } catch (Exception e) {
+            return iso;
         }
+    }
 
-        private void aplicarEstiloStatus(String status) {
-            b.textStatus.setText(rotuloStatus(status));
-            b.textStatus.setBackgroundColor(corStatus(status));
-        }
-
-        private String rotuloStatus(String s) {
-            if (s == null) return "";
-            switch (s) {
-                case "PENDENTE": return "PENDENTE";
-                case "ACEITA": return "ACEITA";
-                case "RECUSADA": return "RECUSADA";
-                case "EM_ANDAMENTO": return "EM ANDAMENTO";
-                case "CONCLUIDA": return "CONCLUÍDA";
-                case "CANCELADA": return "CANCELADA";
-                case "PAGA": return "PAGA";
-                default: return s;
-            }
-        }
-
-        private int corStatus(String s) {
-            if (s == null) return Color.GRAY;
-            switch (s) {
-                case "PENDENTE": return Color.parseColor("#FFA000"); // laranja
-                case "ACEITA": return Color.parseColor("#2196F3");   // azul
-                case "EM_ANDAMENTO": return Color.parseColor("#6200EE"); // roxo
-                case "CONCLUIDA":
-                case "PAGA": return Color.parseColor("#4CAF50");      // verde
-                case "RECUSADA":
-                case "CANCELADA": return Color.parseColor("#E53935"); // vermelho
-                default: return Color.GRAY;
-            }
-        }
-
-        private void montarBotoes(Solicitacao s) {
-            b.containerAcoes.removeAllViews();
-            String st = s.getStatus();
-            if (st == null) return;
-
-            switch (st) {
-                case "PENDENTE":
-                    adicionarBotao("Aceitar", "#4CAF50",
-                            () -> listener.onAcao(s, "ACEITA"));
-                    adicionarBotao("Recusar", "#E53935",
-                            () -> listener.onAcao(s, "RECUSADA"));
-                    break;
-                case "ACEITA":
-                    adicionarBotao("Iniciar serviço", "#6200EE",
-                            () -> listener.onAcao(s, "EM_ANDAMENTO"));
-                    break;
-                case "EM_ANDAMENTO":
-                    adicionarBotao("Marcar como concluído", "#4CAF50",
-                            () -> listener.onAcao(s, "CONCLUIDA"));
-                    break;
-                // CONCLUIDA, RECUSADA, CANCELADA, PAGA não têm ação
-            }
-        }
-
-        private void adicionarBotao(String texto, String corHex, Runnable onClick) {
-            Button btn = new Button(b.getRoot().getContext());
-            btn.setText(texto);
-            btn.setAllCaps(false);
-            btn.setTextColor(Color.WHITE);
-            btn.setBackgroundColor(Color.parseColor(corHex));
-
-            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                    0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
-            lp.setMargins(4, 0, 4, 0);
-            btn.setLayoutParams(lp);
-            btn.setOnClickListener(v -> onClick.run());
-            b.containerAcoes.addView(btn);
-        }
-
-        private String formatarData(String iso) {
-            if (iso == null || iso.isEmpty()) return "";
-            try {
-                SimpleDateFormat entrada = new SimpleDateFormat(
-                        "yyyy-MM-dd'T'HH:mm:ss", Locale.US);
-                entrada.setTimeZone(TimeZone.getTimeZone("UTC"));
-                SimpleDateFormat saida = new SimpleDateFormat(
-                        "dd/MM 'às' HH:mm", Locale.getDefault());
-                return saida.format(entrada.parse(iso));
-            } catch (ParseException e) {
-                return iso;
-            }
-        }
+    static class VH extends RecyclerView.ViewHolder {
+        final ItemSolicitacaoBinding binding;
+        VH(ItemSolicitacaoBinding b) { super(b.getRoot()); this.binding = b; }
     }
 }
