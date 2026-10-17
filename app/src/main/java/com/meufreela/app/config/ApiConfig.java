@@ -8,4 +8,5 @@ public class ApiConfig {
     public static final String BASE_URL_DEV = "http://10.0.2.2:8080/api/";
 
     public static final int TIMEOUT_SEGUNDOS = 30;
+    public static final String WS_URL_DEV = "ws://10.0.2.2:8080/ws/chat";
 }

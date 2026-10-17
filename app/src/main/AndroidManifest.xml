@@ -21,6 +21,11 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".activities.ChatActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
         <activity android:name=".activities.LoginActivity" android:exported="false" />
         <activity android:name=".activities.CadastroActivity" android:exported="false" />
         <activity android:name=".activities.MainClienteActivity" android:exported="false" />

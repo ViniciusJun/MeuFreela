@@ -1,5 +1,6 @@
 package com.meufreela.app.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
@@ -12,6 +13,7 @@ import com.meufreela.app.models.response.Solicitacao;
 import com.meufreela.app.network.ApiService;
 import com.meufreela.app.network.RetrofitClient;
 import com.meufreela.app.storage.TokenManager;
+import com.meufreela.app.utils.AvaliacaoDialog;
 
 import java.util.List;
 
@@ -34,10 +36,28 @@ public class MinhasSolicitacoesActivity extends AppCompatActivity {
         TokenManager tm = new TokenManager(this);
         api = RetrofitClient.getApiService(tm);
 
-        // Cliente não tem botões de aceitar/recusar
         adapter = new SolicitacaoAdapter(new SolicitacaoAdapter.Acoes() {
-            @Override public void aceitar(Solicitacao s) {}
-            @Override public void recusar(Solicitacao s) {}
+            @Override public void aceitar(Solicitacao s) { }
+            @Override public void recusar(Solicitacao s) { }
+            @Override public void concluir(Solicitacao s) { }
+
+            @Override
+            public void avaliar(Solicitacao s) {
+                AvaliacaoDialog.mostrar(
+                        MinhasSolicitacoesActivity.this,
+                        s.getId(),
+                        s.getFreelancerNome(),
+                        () -> carregar()
+                );
+            }
+
+            @Override
+            public void abrirChat(Solicitacao s) {
+                Intent i = new Intent(MinhasSolicitacoesActivity.this, ChatActivity.class);
+                i.putExtra(ChatActivity.EXTRA_SOLICITACAO_ID, s.getId());
+                i.putExtra(ChatActivity.EXTRA_OUTRO_NOME, s.getFreelancerNome());
+                startActivity(i);
+            }
         }, false);
 
         binding.recycler.setLayoutManager(new LinearLayoutManager(this));
