@@ -1,5 +1,6 @@
 package com.meufreela.app.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
@@ -13,7 +14,10 @@ import com.meufreela.app.models.response.Solicitacao;
 import com.meufreela.app.network.ApiService;
 import com.meufreela.app.network.RetrofitClient;
 import com.meufreela.app.storage.TokenManager;
+import com.meufreela.app.utils.AvaliacaoDialog;
 import com.meufreela.app.utils.MenuUtils;
+import com.meufreela.app.utils.AvaliacaoDialog;
+import com.meufreela.app.activities.ChatActivity; // se MainFreelancerActivity está em outro pacote, ajuste
 
 import java.util.List;
 
@@ -118,5 +122,22 @@ public class MainFreelancerActivity extends AppCompatActivity
                         "Erro: " + t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
+    }
+    @Override
+    public void concluir(Solicitacao s) {
+        atualizarStatus(s.getId(), "CONCLUIDA");
+    }
+
+    @Override
+    public void avaliar(Solicitacao s) {
+        AvaliacaoDialog.mostrar(this, s.getId(), s.getClienteNome(), this::carregar);
+    }
+
+    @Override
+    public void abrirChat(Solicitacao s) {
+        android.content.Intent i = new android.content.Intent(this, ChatActivity.class);
+        i.putExtra(ChatActivity.EXTRA_SOLICITACAO_ID, s.getId());
+        i.putExtra(ChatActivity.EXTRA_OUTRO_NOME, s.getClienteNome());
+        startActivity(i);
     }
 }

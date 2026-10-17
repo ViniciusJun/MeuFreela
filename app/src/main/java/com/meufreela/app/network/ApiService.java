@@ -1,10 +1,14 @@
 package com.meufreela.app.network;
 
 import com.meufreela.app.models.request.CadastroRequest;
+import com.meufreela.app.models.request.CriarAvaliacaoRequest;
 import com.meufreela.app.models.request.CriarSolicitacaoRequest;
+import com.meufreela.app.models.request.EnviarMensagemRequest;
 import com.meufreela.app.models.request.LoginRequest;
+import com.meufreela.app.models.response.Avaliacao;
 import com.meufreela.app.models.response.Freelancer;
 import com.meufreela.app.models.response.LoginResponse;
+import com.meufreela.app.models.response.Mensagem;
 import com.meufreela.app.models.response.PerfilUsuario;
 import com.meufreela.app.models.response.Solicitacao;
 
@@ -50,4 +54,18 @@ public interface ApiService {
             @Query("status") String novoStatus);
     @GET("usuarios/me")
     Call<PerfilUsuario> meuPerfil();
+
+    @GET("solicitacoes/{id}/mensagens")
+    Call<List<Mensagem>> historicoChat(@Path("id") String solicitacaoId);
+
+    @POST("solicitacoes/{id}/mensagens")
+    Call<Mensagem> enviarMensagemRest(
+            @Path("id") String solicitacaoId,
+            @Body EnviarMensagemRequest req);
+
+    @POST("avaliacoes")
+    Call<Avaliacao> criarAvaliacao(@Body CriarAvaliacaoRequest request);
+
+    @GET("avaliacoes/usuario/{id}")
+    Call<List<Avaliacao>> avaliacoesDoUsuario(@Path("id") String id);
 }

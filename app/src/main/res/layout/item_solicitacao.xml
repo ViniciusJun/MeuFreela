@@ -71,7 +71,7 @@
             android:textStyle="bold"
             android:textColor="#6200EE" />
 
-        <!-- Botões de ação (visíveis só para PENDENTE) -->
+        <!-- Aceitar / Recusar (freelancer + PENDENTE) -->
         <LinearLayout
             android:id="@+id/containerAcoes"
             android:layout_width="match_parent"
@@ -97,5 +97,34 @@
                 android:layout_marginStart="6dp"
                 android:text="Aceitar" />
         </LinearLayout>
+
+        <!-- Concluir (freelancer + ACEITA/EM_ANDAMENTO) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/botaoConcluir"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Marcar como concluída"
+            android:visibility="gone" />
+
+        <!-- Avaliar (ambos + CONCLUIDA/PAGA) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/botaoAvaliar"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="⭐ Avaliar"
+            android:visibility="gone" />
+
+        <!-- Chat (ambos, se não cancelada/recusada) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/botaoChat"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="💬 Conversar"
+            android:visibility="gone" />
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

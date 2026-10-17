@@ -21,11 +21,14 @@ public class SolicitacaoAdapter extends RecyclerView.Adapter<SolicitacaoAdapter.
     public interface Acoes {
         void aceitar(Solicitacao s);
         void recusar(Solicitacao s);
+        void concluir(Solicitacao s);
+        void avaliar(Solicitacao s);
+        void abrirChat(Solicitacao s);
     }
 
     private final List<Solicitacao> itens = new ArrayList<>();
     private final Acoes acoes;
-    private final boolean ehFreelancer; // se true, mostra botões Aceitar/Recusar
+    private final boolean ehFreelancer;
 
     public SolicitacaoAdapter(Acoes acoes, boolean ehFreelancer) {
         this.acoes = acoes;
@@ -49,11 +52,10 @@ public class SolicitacaoAdapter extends RecyclerView.Adapter<SolicitacaoAdapter.
     @Override
     public void onBindViewHolder(@NonNull VH h, int position) {
         Solicitacao s = itens.get(position);
+        String status = s.getStatus();
 
-        // Nome exibido: para o freelancer, o cliente; para o cliente, o freelancer
         String nome = ehFreelancer ? s.getClienteNome() : s.getFreelancerNome();
         h.binding.textNome.setText(nome);
-
         h.binding.textDescricao.setText(s.getDescricao());
         h.binding.textEndereco.setText("📍 " + s.getEndereco());
 
@@ -64,14 +66,26 @@ public class SolicitacaoAdapter extends RecyclerView.Adapter<SolicitacaoAdapter.
         double valor = s.getValorTotal() != null ? s.getValorTotal() : 0;
         h.binding.textValor.setText(String.format(Locale.getDefault(), "R$ %.2f", valor));
 
-        aplicarStatus(h.binding, s.getStatus());
+        aplicarStatus(h.binding, status);
 
-        // Botões só para o freelancer e quando PENDENTE
-        boolean mostrarBotoes = ehFreelancer && "PENDENTE".equals(s.getStatus());
-        h.binding.containerAcoes.setVisibility(mostrarBotoes ? View.VISIBLE : View.GONE);
+        boolean podeAceitar = ehFreelancer && "PENDENTE".equals(status);
+        h.binding.containerAcoes.setVisibility(podeAceitar ? View.VISIBLE : View.GONE);
+
+        boolean podeConcluir = ehFreelancer
+                && ("ACEITA".equals(status) || "EM_ANDAMENTO".equals(status));
+        h.binding.botaoConcluir.setVisibility(podeConcluir ? View.VISIBLE : View.GONE);
+
+        boolean podeAvaliar = "CONCLUIDA".equals(status) || "PAGA".equals(status);
+        h.binding.botaoAvaliar.setVisibility(podeAvaliar ? View.VISIBLE : View.GONE);
+
+        boolean podeChat = !"CANCELADA".equals(status) && !"RECUSADA".equals(status);
+        h.binding.botaoChat.setVisibility(podeChat ? View.VISIBLE : View.GONE);
 
         h.binding.botaoAceitar.setOnClickListener(v -> acoes.aceitar(s));
         h.binding.botaoRecusar.setOnClickListener(v -> acoes.recusar(s));
+        h.binding.botaoConcluir.setOnClickListener(v -> acoes.concluir(s));
+        h.binding.botaoAvaliar.setOnClickListener(v -> acoes.avaliar(s));
+        h.binding.botaoChat.setOnClickListener(v -> acoes.abrirChat(s));
     }
 
     @Override
@@ -81,22 +95,14 @@ public class SolicitacaoAdapter extends RecyclerView.Adapter<SolicitacaoAdapter.
         int cor;
         String rotulo;
         switch (status) {
-            case "PENDENTE":
-                rotulo = "PENDENTE"; cor = 0xFFFFA000; break;
-            case "ACEITA":
-                rotulo = "ACEITA"; cor = 0xFF2196F3; break;
-            case "EM_ANDAMENTO":
-                rotulo = "EM ANDAMENTO"; cor = 0xFF03A9F4; break;
-            case "CONCLUIDA":
-                rotulo = "CONCLUÍDA"; cor = 0xFF4CAF50; break;
-            case "RECUSADA":
-                rotulo = "RECUSADA"; cor = 0xFFF44336; break;
-            case "CANCELADA":
-                rotulo = "CANCELADA"; cor = 0xFF9E9E9E; break;
-            case "PAGA":
-                rotulo = "PAGA"; cor = 0xFF4CAF50; break;
-            default:
-                rotulo = status; cor = 0xFF9E9E9E;
+            case "PENDENTE":      rotulo = "PENDENTE";      cor = 0xFFFFA000; break;
+            case "ACEITA":        rotulo = "ACEITA";        cor = 0xFF2196F3; break;
+            case "EM_ANDAMENTO":  rotulo = "EM ANDAMENTO";  cor = 0xFF03A9F4; break;
+            case "CONCLUIDA":     rotulo = "CONCLUÍDA";     cor = 0xFF4CAF50; break;
+            case "RECUSADA":      rotulo = "RECUSADA";      cor = 0xFFF44336; break;
+            case "CANCELADA":     rotulo = "CANCELADA";     cor = 0xFF9E9E9E; break;
+            case "PAGA":          rotulo = "PAGA";          cor = 0xFF4CAF50; break;
+            default:              rotulo = status;          cor = 0xFF9E9E9E;
         }
         b.textStatus.setText(rotulo);
         b.textStatus.setTextColor(Color.WHITE);
@@ -105,14 +111,20 @@ public class SolicitacaoAdapter extends RecyclerView.Adapter<SolicitacaoAdapter.
 
     private String formatarData(String iso) {
         if (iso == null) return "—";
-        try {
-            // backend envia algo como "2026-10-15T14:00:00"
-            SimpleDateFormat entrada = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US);
-            SimpleDateFormat saida = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
-            return saida.format(entrada.parse(iso));
-        } catch (Exception e) {
-            return iso;
+        String[] formatos = {
+                "yyyy-MM-dd'T'HH:mm:ss",
+                "yyyy-MM-dd'T'HH:mm",
+                "yyyy-MM-dd'T'HH:mm:ss.SSS"
+        };
+        for (String f : formatos) {
+            try {
+                SimpleDateFormat entrada = new SimpleDateFormat(f, Locale.US);
+                SimpleDateFormat saida = new SimpleDateFormat(
+                        "dd/MM/yyyy HH:mm", Locale.getDefault());
+                return saida.format(entrada.parse(iso));
+            } catch (Exception ignored) {}
         }
+        return iso;
     }
 
     static class VH extends RecyclerView.ViewHolder {
