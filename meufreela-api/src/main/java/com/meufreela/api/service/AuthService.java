@@ -13,6 +13,8 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import java.util.HashSet;
+import java.util.Set;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -41,6 +43,7 @@ public class AuthService {
                 .cpf(request.cpf())
                 .telefone(request.telefone())
                 .tipo(request.tipo())
+                .papeis(new HashSet<>(Set.of(request.tipo())))
                 .verificado(false)
                 .build();
 

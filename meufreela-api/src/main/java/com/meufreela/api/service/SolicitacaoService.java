@@ -10,6 +10,7 @@ import com.meufreela.api.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.Map;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,21 +21,22 @@ public class SolicitacaoService {
 
     private final SolicitacaoRepository solicitacaoRepository;
     private final UsuarioRepository usuarioRepository;
+    private final NotificacaoService notificacaoService;
 
     @Transactional
     public SolicitacaoResumo criar(String emailCliente, CriarSolicitacaoRequest req) {
         Usuario cliente = usuarioRepository.findByEmail(emailCliente)
                 .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado"));
 
-        if (cliente.getTipo() != Usuario.TipoUsuario.CLIENTE) {
-            throw new IllegalArgumentException("Apenas clientes podem criar solicitações");
+        if (!cliente.temPapel(Usuario.TipoUsuario.CLIENTE)) {
+            throw new IllegalArgumentException("Você não tem perfil de cliente");
         }
 
         Usuario freelancer = usuarioRepository.findById(req.freelancerId())
                 .orElseThrow(() -> new IllegalArgumentException("Freelancer não encontrado"));
 
-        if (freelancer.getTipo() != Usuario.TipoUsuario.FREELANCER) {
-            throw new IllegalArgumentException("Usuário não é um freelancer");
+        if (!freelancer.temPapel(Usuario.TipoUsuario.FREELANCER)) {
+            throw new IllegalArgumentException("Usuário não oferece serviços");
         }
 
         if (freelancer.getId().equals(cliente.getId())) {
@@ -56,6 +58,12 @@ public class SolicitacaoService {
                 .build();
 
         solicitacaoRepository.save(s);
+        notificacaoService.enviar(
+                freelancer,
+                "Nova solicitação recebida",
+                cliente.getNome() + " quer contratar você: " + req.descricao(),
+                Map.of("tipo", "NOVA_SOLICITACAO", "solicitacaoId", s.getId())
+        );
         return SolicitacaoResumo.from(s);
     }
 
@@ -106,6 +114,23 @@ public class SolicitacaoService {
         s.setStatus(novoStatus);
         s.setAtualizadoEm(LocalDateTime.now());
         solicitacaoRepository.save(s);
+        String texto;
+        switch (novoStatus) {
+            case ACEITA -> texto = "Sua solicitação foi aceita!";
+            case RECUSADA -> texto = "Sua solicitação foi recusada.";
+            case CONCLUIDA -> texto = "Serviço concluído. Avalie o profissional!";
+            case CANCELADA -> texto = "A solicitação foi cancelada.";
+            default -> texto = "Status atualizado: " + novoStatus;
+        }
+
+        notificacaoService.enviar(
+                s.getCliente(),
+                "Atualização da solicitação",
+                texto,
+                Map.of("tipo", "STATUS_ALTERADO",
+                        "solicitacaoId", s.getId(),
+                        "status", novoStatus.name())
+        );
         return SolicitacaoResumo.from(s);
     }
 }

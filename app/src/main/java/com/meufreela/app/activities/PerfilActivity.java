@@ -22,6 +22,7 @@ public class PerfilActivity extends AppCompatActivity {
 
     private ActivityPerfilBinding binding;
     private TokenManager tokenManager;
+    private ApiService api;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,15 +31,30 @@ public class PerfilActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         tokenManager = new TokenManager(this);
-        ApiService api = RetrofitClient.getApiService(tokenManager);
+        api = RetrofitClient.getApiService(tokenManager);
 
         binding.botaoSair.setOnClickListener(v -> confirmarLogout());
+        binding.botaoTornarFreelancer.setOnClickListener(v ->
+                startActivity(new Intent(this, TornarFreelancerActivity.class)));
 
+        carregarPerfil();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        carregarPerfil();
+    }
+
+    private void carregarPerfil() {
         api.meuPerfil().enqueue(new Callback<PerfilUsuario>() {
             @Override
-            public void onResponse(Call<PerfilUsuario> call, Response<PerfilUsuario> response) {
+            public void onResponse(Call<PerfilUsuario> call,
+                                   Response<PerfilUsuario> response) {
+
                 if (response.isSuccessful() && response.body() != null) {
                     PerfilUsuario u = response.body();
+
                     binding.editNome.setText(u.getNome());
                     binding.editEmail.setText(u.getEmail());
 
@@ -48,6 +64,16 @@ public class PerfilActivity extends AppCompatActivity {
 
                     binding.textVerificado.setVisibility(
                             u.isVerificado() ? View.VISIBLE : View.GONE);
+
+                    boolean ehFreelancer = u.temPapel("FREELANCER")
+                            || "FREELANCER".equals(u.getTipo());
+
+                    binding.botaoTornarFreelancer.setVisibility(
+                            ehFreelancer ? View.GONE : View.VISIBLE);
+
+                    android.util.Log.d("PERFIL_DEBUG",
+                            "tipo=" + u.getTipo() + " papeis=" + u.getPapeis()
+                                    + " ehFreelancer=" + ehFreelancer);
                 }
             }
 

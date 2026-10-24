@@ -14,6 +14,7 @@ import com.meufreela.app.models.response.LoginResponse;
 import com.meufreela.app.network.ApiService;
 import com.meufreela.app.network.RetrofitClient;
 import com.meufreela.app.storage.TokenManager;
+import com.meufreela.app.utils.FcmTokenUtils;
 import com.meufreela.app.utils.ValidacaoUtils;
 
 import org.json.JSONObject;
@@ -106,6 +107,8 @@ public class CadastroActivity extends AppCompatActivity {
                             dados.getUsuario().getId(),
                             dados.getUsuario().getTipo()
                     );
+                    FcmTokenUtils.solicitarPermissao(CadastroActivity.this);
+                    FcmTokenUtils.registrarTokenNoBackend(CadastroActivity.this);
                     Toast.makeText(CadastroActivity.this,
                             "Conta criada com sucesso!", Toast.LENGTH_SHORT).show();
                     irParaHome(dados.getUsuario().getTipo());

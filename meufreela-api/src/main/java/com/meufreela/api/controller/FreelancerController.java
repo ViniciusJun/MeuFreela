@@ -22,8 +22,9 @@ public class FreelancerController {
             @RequestParam(required = false) CategoriaServico categoria) {
 
         List<Usuario> freelancers = (categoria != null)
-                ? repository.findByTipoAndCategoria(Usuario.TipoUsuario.FREELANCER, categoria)
-                : repository.findByTipo(Usuario.TipoUsuario.FREELANCER);
+                ? repository.findByPapeisContainingAndCategoria(
+                Usuario.TipoUsuario.FREELANCER, categoria)
+                : repository.findByPapeisContaining(Usuario.TipoUsuario.FREELANCER);
 
         return ResponseEntity.ok(
                 freelancers.stream().map(FreelancerResumo::from).toList()
@@ -33,7 +34,7 @@ public class FreelancerController {
     @GetMapping("/{id}")
     public ResponseEntity<FreelancerResumo> detalhe(@PathVariable String id) {
         return repository.findById(id)
-                .filter(u -> u.getTipo() == Usuario.TipoUsuario.FREELANCER)
+                .filter(u -> u.temPapel(Usuario.TipoUsuario.FREELANCER))
                 .map(u -> ResponseEntity.ok(FreelancerResumo.from(u)))
                 .orElse(ResponseEntity.notFound().build());
     }

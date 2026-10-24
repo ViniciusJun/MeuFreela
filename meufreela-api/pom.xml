@@ -32,6 +32,11 @@
 		<jjwt.version>0.12.6</jjwt.version>
 	</properties>
 	<dependencies>
+		<dependency>
+			<groupId>com.google.firebase</groupId>
+			<artifactId>firebase-admin</artifactId>
+			<version>9.4.1</version>
+		</dependency>
 		<!-- ... dependências do Spring Initializr ... -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

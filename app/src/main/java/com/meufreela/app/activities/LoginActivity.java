@@ -13,6 +13,7 @@ import com.meufreela.app.models.response.LoginResponse;
 import com.meufreela.app.network.ApiService;
 import com.meufreela.app.network.RetrofitClient;
 import com.meufreela.app.storage.TokenManager;
+import com.meufreela.app.utils.FcmTokenUtils;
 import com.meufreela.app.utils.ValidacaoUtils;
 
 import org.json.JSONObject;
@@ -70,6 +71,8 @@ public class LoginActivity extends AppCompatActivity {
                                     dados.getUsuario().getId(),
                                     dados.getUsuario().getTipo()
                             );
+                            FcmTokenUtils.solicitarPermissao(LoginActivity.this);
+                            FcmTokenUtils.registrarTokenNoBackend(LoginActivity.this);
                             redirecionarPorTipo(dados.getUsuario().getTipo());
                         } else {
                             try {

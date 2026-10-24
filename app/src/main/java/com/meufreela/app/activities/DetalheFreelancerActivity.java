@@ -6,14 +6,18 @@ import android.view.View;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.meufreela.app.adapters.AvaliacaoAdapter;
 import com.meufreela.app.databinding.ActivityDetalheFreelancerBinding;
+import com.meufreela.app.models.response.Avaliacao;
 import com.meufreela.app.models.response.Freelancer;
 import com.meufreela.app.network.ApiService;
 import com.meufreela.app.network.RetrofitClient;
 import com.meufreela.app.storage.TokenManager;
 import com.meufreela.app.utils.MenuUtils;
 
+import java.util.List;
 import java.util.Locale;
 
 import retrofit2.Call;
@@ -67,6 +71,21 @@ public class DetalheFreelancerActivity extends AppCompatActivity {
                 Toast.makeText(DetalheFreelancerActivity.this,
                         "Erro: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
+        });
+
+        AvaliacaoAdapter avAdapter = new AvaliacaoAdapter();
+        binding.recyclerAvaliacoes.setLayoutManager(new LinearLayoutManager(this));
+        binding.recyclerAvaliacoes.setAdapter(avAdapter);
+
+        api.avaliacoesDoUsuario(id).enqueue(new Callback<List<Avaliacao>>() {
+            @Override
+            public void onResponse(Call<List<Avaliacao>> call,
+                                   Response<List<Avaliacao>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    avAdapter.setItens(response.body());
+                }
+            }
+            @Override public void onFailure(Call<List<Avaliacao>> call, Throwable t) {}
         });
 
         binding.botaoContratar.setOnClickListener(v -> {
