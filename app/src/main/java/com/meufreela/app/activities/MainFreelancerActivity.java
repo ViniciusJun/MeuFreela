@@ -46,7 +46,7 @@ public class MainFreelancerActivity extends AppCompatActivity
         binding.recyclerSolicitacoes.setAdapter(adapter);
 
         //Botão de menu
-        binding.botaoMenu.setOnClickListener(v -> MenuUtils.mostrar(this, v, true));
+        binding.botaoMenu.setOnClickListener(v -> MenuUtils.mostrar(this, v));
     }
 
     @Override

@@ -33,4 +33,17 @@
         android:text="📋  Minhas solicitações"
         android:textSize="16sp"
         android:padding="14dp" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#EEEEEE" />
+
+    <TextView
+        android:id="@+id/opcaoAvaliacoes"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="⭐  Minhas avaliações"
+        android:textSize="16sp"
+        android:padding="14dp" />
 </LinearLayout>

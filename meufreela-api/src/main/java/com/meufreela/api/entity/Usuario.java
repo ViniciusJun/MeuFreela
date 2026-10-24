@@ -10,6 +10,12 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.FetchType;
+import java.util.HashSet;
+import java.util.Set;
+
 @Entity
 @Table(name = "usuarios")
 @Getter
@@ -22,6 +28,9 @@ public class Usuario implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
+
+    @Column(length = 500)
+    private String fcmToken;
 
     @Column(nullable = false)
     private String nome;
@@ -77,11 +86,30 @@ public class Usuario implements UserDetails {
         FREELANCER
     }
 
+    // ============ Papeis de usuário ============
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Enumerated(EnumType.STRING)
+    @CollectionTable(name = "usuario_papeis",
+            joinColumns = @JoinColumn(name = "usuario_id"))
+    @Column(name = "papel")
+    @Builder.Default
+    private Set<TipoUsuario> papeis = new HashSet<>();
+
+    public boolean temPapel(TipoUsuario papel) {
+        return papeis.contains(papel);
+    }
+
+    public void adicionarPapel(TipoUsuario papel) {
+        this.papeis.add(papel);
+    }
+
     // ============ UserDetails ============
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + tipo.name()));
+        return papeis.stream()
+                .map(p -> new SimpleGrantedAuthority("ROLE_" + p.name()))
+                .toList();
     }
 
     @Override

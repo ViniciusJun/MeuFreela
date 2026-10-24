@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Map;
 import java.util.List;
 
 @Service
@@ -20,6 +21,7 @@ public class ChatService {
     private final MensagemRepository mensagemRepository;
     private final SolicitacaoRepository solicitacaoRepository;
     private final UsuarioRepository usuarioRepository;
+    private final NotificacaoService notificacaoService;
 
     @Transactional
     public MensagemResumo salvar(String emailRemetente, String solicitacaoId, String conteudo) {
@@ -43,6 +45,18 @@ public class ChatService {
                 .build();
 
         mensagemRepository.save(m);
+        Usuario destinatario = s.getCliente().getId().equals(remetente.getId())
+                ? s.getFreelancer()
+                : s.getCliente();
+
+        notificacaoService.enviar(
+                destinatario,
+                "Nova mensagem de " + remetente.getNome(),
+                conteudo.length() > 100 ? conteudo.substring(0, 100) + "..." : conteudo,
+                Map.of("tipo", "NOVA_MENSAGEM",
+                        "solicitacaoId", s.getId(),
+                        "remetenteNome", remetente.getNome())
+        );
         return MensagemResumo.from(m);
     }
 

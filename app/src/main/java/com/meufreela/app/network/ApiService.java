@@ -4,16 +4,20 @@ import com.meufreela.app.models.request.CadastroRequest;
 import com.meufreela.app.models.request.CriarAvaliacaoRequest;
 import com.meufreela.app.models.request.CriarSolicitacaoRequest;
 import com.meufreela.app.models.request.EnviarMensagemRequest;
+import com.meufreela.app.models.request.FcmTokenRequest;
 import com.meufreela.app.models.request.LoginRequest;
+import com.meufreela.app.models.request.TornarFreelancerRequest;
 import com.meufreela.app.models.response.Avaliacao;
 import com.meufreela.app.models.response.Freelancer;
 import com.meufreela.app.models.response.LoginResponse;
 import com.meufreela.app.models.response.Mensagem;
 import com.meufreela.app.models.response.PerfilUsuario;
 import com.meufreela.app.models.response.Solicitacao;
+import okhttp3.ResponseBody;
 
 import java.util.List;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
@@ -24,21 +28,21 @@ import retrofit2.http.Query;
 
 public interface ApiService {
 
-    // ----- Autenticação -----
+    // --- Autenticação ---
     @POST("auth/login")
     Call<LoginResponse> login(@Body LoginRequest request);
 
     @POST("auth/cadastro")
     Call<LoginResponse> cadastrar(@Body CadastroRequest request);
 
-    // ----- Freelancers -----
+    // --- Freelancers ---
     @GET("freelancers")
     Call<List<Freelancer>> listarFreelancers(@Query("categoria") String categoria);
 
     @GET("freelancers/{id}")
     Call<Freelancer> detalheFreelancer(@Path("id") String id);
 
-    // ----- Solicitações -----
+    // --- Solicitações ---
     @POST("solicitacoes")
     Call<Solicitacao> criarSolicitacao(@Body CriarSolicitacaoRequest request);
 
@@ -51,10 +55,9 @@ public interface ApiService {
     @PATCH("solicitacoes/{id}/status")
     Call<Solicitacao> atualizarStatus(
             @Path("id") String id,
-            @Query("status") String novoStatus);
-    @GET("usuarios/me")
-    Call<PerfilUsuario> meuPerfil();
+            @Query("status") String status);
 
+    // --- Chat ---
     @GET("solicitacoes/{id}/mensagens")
     Call<List<Mensagem>> historicoChat(@Path("id") String solicitacaoId);
 
@@ -63,9 +66,20 @@ public interface ApiService {
             @Path("id") String solicitacaoId,
             @Body EnviarMensagemRequest req);
 
+    // --- Avaliações ---
     @POST("avaliacoes")
     Call<Avaliacao> criarAvaliacao(@Body CriarAvaliacaoRequest request);
 
     @GET("avaliacoes/usuario/{id}")
     Call<List<Avaliacao>> avaliacoesDoUsuario(@Path("id") String id);
+
+    // --- Usuário ---
+    @GET("usuarios/me")
+    Call<PerfilUsuario> meuPerfil();
+
+    @POST("usuarios/fcm-token")
+    Call<ResponseBody> salvarFcmToken(@Body FcmTokenRequest request);
+
+    @POST("usuarios/tornar-freelancer")
+    Call<ResponseBody> tornarFreelancer(@Body TornarFreelancerRequest request);
 }

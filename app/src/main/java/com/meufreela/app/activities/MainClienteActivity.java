@@ -64,7 +64,7 @@ public class MainClienteActivity extends AppCompatActivity {
                 startActivity(new Intent(this, MinhasSolicitacoesActivity.class)));
 
         //Botão menu
-        binding.botaoMenu.setOnClickListener(v -> MenuUtils.mostrar(this, v, false));
+        binding.botaoMenu.setOnClickListener(v -> MenuUtils.mostrar(this, v));
     }
 
     private void montarChipsCategorias() {
