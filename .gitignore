@@ -13,3 +13,18 @@
 .externalNativeBuild
 .cxx
 local.properties
+# Segredos
+firebase-service-account.json
+google-services.json
+
+# Maven
+target/
+*.class
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Docker
+.docker/
