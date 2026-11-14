@@ -5,23 +5,21 @@
     android:orientation="vertical"
     android:background="#F7F7F7">
 
-    <!-- Header -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="115dp"
+        android:background="#6200EE"
+        android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:background="?attr/colorPrimary"
-        android:padding="20dp"
-        android:gravity="center_vertical">
+        android:padding="20dp">
 
         <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_width="317dp"
+            android:layout_height="62dp"
             android:layout_weight="1"
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/textSaudacao"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Olá!"
@@ -32,23 +30,22 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="O que você precisa hoje?"
+                android:layout_marginTop="4dp"
+                android:text="Que serviço você precisa?"
                 android:textColor="#FFFFFF"
-                android:textSize="14sp"
-                android:layout_marginTop="4dp" />
+                android:textSize="14sp" />
         </LinearLayout>
 
         <TextView
             android:id="@+id/botaoMenu"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="55dp"
+            android:layout_height="64dp"
+            android:padding="8dp"
             android:text="☰"
-            android:textSize="28sp"
             android:textColor="#FFFFFF"
-            android:padding="8dp" />
+            android:textSize="40sp" />
     </LinearLayout>
 
-    <!-- Categorias (chips horizontais) -->
     <HorizontalScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -63,28 +60,17 @@
             android:paddingHorizontal="12dp" />
     </HorizontalScrollView>
 
-    <!-- Lista de freelancers -->
     <TextView
-        android:id="@+id/textTituloLista"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Profissionais disponíveis"
+        android:text="Serviços disponíveis"
         android:textSize="16sp"
         android:textStyle="bold"
         android:paddingHorizontal="16dp"
         android:layout_marginBottom="8dp" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/botaoMinhasSolicitacoes"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginBottom="8dp"
-        android:text="📋 Minhas Solicitações" />
-
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerFreelancers"
+        android:id="@+id/recyclerServicos"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"

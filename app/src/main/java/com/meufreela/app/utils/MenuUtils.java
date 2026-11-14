@@ -10,6 +10,7 @@ import com.meufreela.app.R;
 import com.meufreela.app.activities.AvaliacoesActivity;
 import com.meufreela.app.activities.MainClienteActivity;
 import com.meufreela.app.activities.MainFreelancerActivity;
+import com.meufreela.app.activities.MeusServicosActivity;
 import com.meufreela.app.activities.MinhasSolicitacoesActivity;
 import com.meufreela.app.activities.PerfilActivity;
 import com.meufreela.app.models.response.PerfilUsuario;
@@ -56,12 +57,33 @@ public class MenuUtils {
                 @Override
                 public void onResponse(Call<PerfilUsuario> call,
                                        Response<PerfilUsuario> response) {
-                    if (!response.isSuccessful() || response.body() == null) {
+
+                    // CORREÇÃO 1: declarar u ANTES de qualquer uso.
+                    PerfilUsuario u = (response.isSuccessful()) ? response.body() : null;
+
+                    // Fallback: se não há perfil, cai no menu padrão e encerra.
+                    if (u == null) {
                         configurarMinhasSolicitacoes(activity, dialog, opcaoSolicitacoes);
                         return;
                     }
 
-                    PerfilUsuario u = response.body();
+                    // CORREÇÃO 2: opcaoMeusServicos pode não existir no layout.
+                    TextView opcaoMeusServicos = dialog.findViewById(R.id.opcaoMeusServicos);
+                    if (opcaoMeusServicos != null) {
+                        // CORREÇÃO 3: sem "else", o item poderia herdar visibilidade
+                        // do XML e aparecer para clientes que não são freelancers.
+                        if (u.temPapel("FREELANCER")) {
+                            opcaoMeusServicos.setVisibility(View.VISIBLE);
+                            opcaoMeusServicos.setOnClickListener(v -> {
+                                activity.startActivity(
+                                        new Intent(activity, MeusServicosActivity.class));
+                                dialog.dismiss();
+                            });
+                        } else {
+                            opcaoMeusServicos.setVisibility(View.GONE);
+                        }
+                    }
+
                     boolean temAmbos = u.temPapel("FREELANCER") && u.temPapel("CLIENTE");
 
                     if (temAmbos) {

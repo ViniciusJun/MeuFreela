@@ -2,6 +2,7 @@ package com.meufreela.app.network;
 
 import com.meufreela.app.models.request.CadastroRequest;
 import com.meufreela.app.models.request.CriarAvaliacaoRequest;
+import com.meufreela.app.models.request.CriarServicoRequest;
 import com.meufreela.app.models.request.CriarSolicitacaoRequest;
 import com.meufreela.app.models.request.EnviarMensagemRequest;
 import com.meufreela.app.models.request.FcmTokenRequest;
@@ -12,6 +13,7 @@ import com.meufreela.app.models.response.Freelancer;
 import com.meufreela.app.models.response.LoginResponse;
 import com.meufreela.app.models.response.Mensagem;
 import com.meufreela.app.models.response.PerfilUsuario;
+import com.meufreela.app.models.response.Servico;
 import com.meufreela.app.models.response.Solicitacao;
 import okhttp3.ResponseBody;
 
@@ -20,9 +22,11 @@ import java.util.List;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.PATCH;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 
@@ -82,4 +86,26 @@ public interface ApiService {
 
     @POST("usuarios/tornar-freelancer")
     Call<ResponseBody> tornarFreelancer(@Body TornarFreelancerRequest request);
+
+    // Serviços
+    @GET("servicos")
+    Call<List<Servico>> listarServicos(@Query("categoria") String categoria);
+
+    @GET("servicos/meus")
+    Call<List<Servico>> meusServicos();
+
+    @GET("servicos/{id}")
+    Call<Servico> detalheServico(@Path("id") String id);
+
+    @POST("servicos")
+    Call<Servico> criarServico(@Body CriarServicoRequest req);
+
+    @PUT("servicos/{id}")
+    Call<Servico> atualizarServico(@Path("id") String id, @Body CriarServicoRequest req);
+
+    @PATCH("servicos/{id}/ativo")
+    Call<Servico> alternarServicoAtivo(@Path("id") String id);
+
+    @DELETE("servicos/{id}")
+    Call<Void> excluirServico(@Path("id") String id);
 }

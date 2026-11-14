@@ -10,9 +10,9 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.meufreela.app.adapters.FreelancerAdapter;
+import com.meufreela.app.adapters.ServicoAdapter;
 import com.meufreela.app.databinding.ActivityMainClienteBinding;
-import com.meufreela.app.models.response.Freelancer;
+import com.meufreela.app.models.response.Servico;
 import com.meufreela.app.network.ApiService;
 import com.meufreela.app.network.RetrofitClient;
 import com.meufreela.app.storage.TokenManager;
@@ -26,7 +26,6 @@ import retrofit2.Response;
 
 public class MainClienteActivity extends AppCompatActivity {
 
-    // Rótulos amigáveis e valor enviado para o backend
     private static final String[][] CATEGORIAS = {
             {"Todos", ""},
             {"Reformas", "REFORMAS_REPAROS"},
@@ -37,9 +36,8 @@ public class MainClienteActivity extends AppCompatActivity {
     };
 
     private ActivityMainClienteBinding binding;
-    private ApiService apiService;
-    private TokenManager tokenManager;
-    private FreelancerAdapter adapter;
+    private ApiService api;
+    private ServicoAdapter adapter;
     private String categoriaAtual = "";
 
     @Override
@@ -48,27 +46,30 @@ public class MainClienteActivity extends AppCompatActivity {
         binding = ActivityMainClienteBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        tokenManager = new TokenManager(this);
-        apiService = RetrofitClient.getApiService(tokenManager);
+        TokenManager tm = new TokenManager(this);
+        api = RetrofitClient.getApiService(tm);
 
-        // Configuração do RecyclerView
-        adapter = new FreelancerAdapter(this::abrirDetalhes);
-        binding.recyclerFreelancers.setLayoutManager(new LinearLayoutManager(this));
-        binding.recyclerFreelancers.setAdapter(adapter);
+        adapter = new ServicoAdapter(new ServicoAdapter.Acoes() {
+            @Override
+            public void onServicoClick(Servico s) {
+                Intent i = new Intent(MainClienteActivity.this, DetalheServicoActivity.class);
+                i.putExtra(DetalheServicoActivity.EXTRA_ID, s.getId());
+                startActivity(i);
+            }
+            @Override public void onPausar(Servico s) {}
+            @Override public void onExcluir(Servico s) {}
+        }, false);
+
+        binding.recyclerServicos.setLayoutManager(new LinearLayoutManager(this));
+        binding.recyclerServicos.setAdapter(adapter);
+
+        binding.botaoMenu.setOnClickListener(v -> MenuUtils.mostrar(this, v));
 
         montarChipsCategorias();
-        carregarFreelancers("");
-
-        //Botão minhas solicitações
-        binding.botaoMinhasSolicitacoes.setOnClickListener(v ->
-                startActivity(new Intent(this, MinhasSolicitacoesActivity.class)));
-
-        //Botão menu
-        binding.botaoMenu.setOnClickListener(v -> MenuUtils.mostrar(this, v));
+        carregarServicos("");
     }
 
     private void montarChipsCategorias() {
-        // Limpa os chips existentes
         binding.containerCategorias.removeAllViews();
 
         for (String[] cat : CATEGORIAS) {
@@ -90,53 +91,38 @@ public class MainClienteActivity extends AppCompatActivity {
             chip.setOnClickListener(v -> {
                 categoriaAtual = cat[1];
                 montarChipsCategorias();
-                carregarFreelancers(categoriaAtual);
+                carregarServicos(categoriaAtual);
             });
 
             binding.containerCategorias.addView(chip);
         }
     }
 
-    private void carregarFreelancers(String categoria) {
-        // Mostra a barra de progresso
+    private void carregarServicos(String categoria) {
         binding.progressBar.setVisibility(View.VISIBLE);
-
         String filtro = categoria.isEmpty() ? null : categoria;
-        apiService.listarFreelancers(filtro).enqueue(new Callback<List<Freelancer>>() {
+
+        api.listarServicos(filtro).enqueue(new Callback<List<Servico>>() {
             @Override
-            public void onResponse(Call<List<Freelancer>> call,
-                                   Response<List<Freelancer>> response) {
+            public void onResponse(Call<List<Servico>> call,
+                                   Response<List<Servico>> response) {
                 binding.progressBar.setVisibility(View.GONE);
                 if (response.isSuccessful() && response.body() != null) {
                     adapter.setItens(response.body());
                     if (response.body().isEmpty()) {
                         Toast.makeText(MainClienteActivity.this,
-                                "Nenhum profissional nesta categoria ainda.",
+                                "Nenhum serviço nesta categoria ainda.",
                                 Toast.LENGTH_SHORT).show();
                     }
-                } else {
-                    Toast.makeText(MainClienteActivity.this,
-                            "Erro ao carregar profissionais", Toast.LENGTH_SHORT).show();
                 }
             }
 
-            // Caso ocorra algum erro na requisição, mostra uma mensagem de erro
             @Override
-            public void onFailure(Call<List<Freelancer>> call, Throwable t) {
+            public void onFailure(Call<List<Servico>> call, Throwable t) {
                 binding.progressBar.setVisibility(View.GONE);
                 Toast.makeText(MainClienteActivity.this,
-                        "Erro de conexão: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                        "Erro: " + t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
-    }
-
-    private void abrirDetalhes(Freelancer f) {
-        // Abre a tela de detalhes do profissional
-        Intent i = new Intent(this, DetalheFreelancerActivity.class);
-        i.putExtra(DetalheFreelancerActivity.EXTRA_ID, f.getId());
-        i.putExtra(DetalheFreelancerActivity.EXTRA_NOME, f.getNome());
-        i.putExtra(DetalheFreelancerActivity.EXTRA_PRECO,
-                f.getPrecoHora() != null ? f.getPrecoHora() : 0.0);
-        startActivity(i);
     }
 }

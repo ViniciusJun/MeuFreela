@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 public record CriarSolicitacaoRequest(
         @NotBlank(message = "ID do freelancer é obrigatório")
         String freelancerId,
+        String servicoId,
 
         @NotBlank(message = "Descrição é obrigatória")
         @Size(min = 10, max = 1000, message = "Descrição deve ter entre 10 e 1000 caracteres")

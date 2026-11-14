@@ -30,11 +30,17 @@ public class NovaSolicitacaoActivity extends AppCompatActivity {
     public static final String EXTRA_FREELANCER_ID = "fid";
     public static final String EXTRA_FREELANCER_NOME = "fnome";
     public static final String EXTRA_FREELANCER_PRECO = "fpreco";
+    public static final String EXTRA_SERVICO_ID = "servico_id";
+    public static final String EXTRA_SERVICO_TITULO = "servico_titulo";
 
     private ActivityNovaSolicitacaoBinding binding;
     private ApiService api;
     private double precoHora;
     private Calendar dataSelecionada;
+
+    // CORREÇÃO: promovidas a campos da classe para ficarem visíveis em enviar()
+    private String freelancerId;
+    private String servicoId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,8 +51,10 @@ public class NovaSolicitacaoActivity extends AppCompatActivity {
         TokenManager tm = new TokenManager(this);
         api = RetrofitClient.getApiService(tm);
 
-        String id = getIntent().getStringExtra(EXTRA_FREELANCER_ID);
+        freelancerId = getIntent().getStringExtra(EXTRA_FREELANCER_ID);
+        servicoId = getIntent().getStringExtra(EXTRA_SERVICO_ID);
         String nome = getIntent().getStringExtra(EXTRA_FREELANCER_NOME);
+        String servicoTitulo = getIntent().getStringExtra(EXTRA_SERVICO_TITULO);
         precoHora = getIntent().getDoubleExtra(EXTRA_FREELANCER_PRECO, 0);
 
         binding.textFreelancer.setText("Contratar: " + nome);
@@ -54,7 +62,11 @@ public class NovaSolicitacaoActivity extends AppCompatActivity {
 
         binding.editDuracao.setOnFocusChangeListener((v, has) -> atualizarValor());
         binding.editData.setOnClickListener(v -> abrirSeletorDataHora());
-        binding.botaoEnviar.setOnClickListener(v -> enviar(id));
+        binding.botaoEnviar.setOnClickListener(v -> enviar());
+
+        if (servicoTitulo != null) {
+            binding.textFreelancer.setText("Serviço: " + servicoTitulo);
+        }
     }
 
     private void abrirSeletorDataHora() {
@@ -83,7 +95,8 @@ public class NovaSolicitacaoActivity extends AppCompatActivity {
         }
     }
 
-    private void enviar(String freelancerId) {
+    // CORREÇÃO: sem parâmetro — usa os campos freelancerId e servicoId
+    private void enviar() {
         String descricao = texto(binding.editDescricao);
         String endereco = texto(binding.editEndereco);
         String horasStr = texto(binding.editDuracao);
@@ -109,6 +122,16 @@ public class NovaSolicitacaoActivity extends AppCompatActivity {
             return;
         }
 
+        // Validação preventiva: o backend exige servicoId OU freelancerId.
+        // Falhar aqui evita um round-trip ao servidor só para receber 400.
+        if ((servicoId == null || servicoId.isBlank())
+                && (freelancerId == null || freelancerId.isBlank())) {
+            Toast.makeText(this,
+                    "Erro: nenhum freelancer ou serviço informado.",
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
+
         // Formata para ISO-8601, sem timezone (compatível com LocalDateTime)
         SimpleDateFormat iso = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US);
         String dataIso = iso.format(dataSelecionada.getTime());
@@ -116,7 +139,7 @@ public class NovaSolicitacaoActivity extends AppCompatActivity {
         mostrarLoading(true);
 
         CriarSolicitacaoRequest req = new CriarSolicitacaoRequest(
-                freelancerId, descricao, endereco, dataIso, horas);
+                freelancerId, servicoId, descricao, endereco, dataIso, horas);
 
         api.criarSolicitacao(req).enqueue(new Callback<Solicitacao>() {
             @Override

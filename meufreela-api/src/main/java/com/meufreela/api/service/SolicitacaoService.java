@@ -7,9 +7,14 @@ import com.meufreela.api.entity.StatusSolicitacao;
 import com.meufreela.api.entity.Usuario;
 import com.meufreela.api.repository.SolicitacaoRepository;
 import com.meufreela.api.repository.UsuarioRepository;
+import com.meufreela.api.entity.Servico;
+import com.meufreela.api.repository.ServicoRepository;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.Map;
 
 import java.time.LocalDateTime;
@@ -22,6 +27,7 @@ public class SolicitacaoService {
     private final SolicitacaoRepository solicitacaoRepository;
     private final UsuarioRepository usuarioRepository;
     private final NotificacaoService notificacaoService;
+    private final ServicoRepository servicoRepository;
 
     @Transactional
     public SolicitacaoResumo criar(String emailCliente, CriarSolicitacaoRequest req) {
@@ -32,8 +38,22 @@ public class SolicitacaoService {
             throw new IllegalArgumentException("Você não tem perfil de cliente");
         }
 
-        Usuario freelancer = usuarioRepository.findById(req.freelancerId())
-                .orElseThrow(() -> new IllegalArgumentException("Freelancer não encontrado"));
+        Usuario freelancer;
+        Servico servico = null;
+
+        if (req.servicoId() != null && !req.servicoId().isBlank()) {
+            servico = servicoRepository.findById(req.servicoId())
+                    .orElseThrow(() -> new IllegalArgumentException("Serviço não encontrado"));
+            if (!servico.isAtivo()) {
+                throw new IllegalArgumentException("Este serviço está pausado");
+            }
+            freelancer = servico.getFreelancer();
+        } else if (req.freelancerId() != null && !req.freelancerId().isBlank()) {
+            freelancer = usuarioRepository.findById(req.freelancerId())
+                    .orElseThrow(() -> new IllegalArgumentException("Freelancer não encontrado"));
+        } else {
+            throw new IllegalArgumentException("Informe o serviço ou o freelancer");
+        }
 
         if (!freelancer.temPapel(Usuario.TipoUsuario.FREELANCER)) {
             throw new IllegalArgumentException("Usuário não oferece serviços");
@@ -58,12 +78,9 @@ public class SolicitacaoService {
                 .build();
 
         solicitacaoRepository.save(s);
-        notificacaoService.enviar(
-                freelancer,
-                "Nova solicitação recebida",
+        notificacaoService.enviar(freelancer, "Nova solicitação recebida",
                 cliente.getNome() + " quer contratar você: " + req.descricao(),
-                Map.of("tipo", "NOVA_SOLICITACAO", "solicitacaoId", s.getId())
-        );
+                Map.of("tipo", "NOVA_SOLICITACAO", "solicitacaoId", s.getId()));
         return SolicitacaoResumo.from(s);
     }
 
@@ -89,8 +106,6 @@ public class SolicitacaoService {
         Solicitacao s = solicitacaoRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Solicitação não encontrada"));
 
-        // Autorização: só o freelancer pode aceitar/recusar/iniciar/concluir
-        //                só o cliente pode cancelar
         boolean ehFreelancer = s.getFreelancer().getId().equals(u.getId());
         boolean ehCliente = s.getCliente().getId().equals(u.getId());
 
@@ -98,15 +113,14 @@ public class SolicitacaoService {
             throw new IllegalArgumentException("Você não tem permissão sobre esta solicitação");
         }
 
-        // Regras de transição de estado
         switch (novoStatus) {
             case ACEITA, RECUSADA, EM_ANDAMENTO, CONCLUIDA -> {
-                if (!ehFreelancer) throw new IllegalArgumentException(
-                        "Apenas o freelancer pode alterar para " + novoStatus);
+                if (!ehFreelancer)
+                    throw new IllegalArgumentException("Apenas o freelancer pode alterar para " + novoStatus);
             }
             case CANCELADA -> {
-                if (!ehCliente) throw new IllegalArgumentException(
-                        "Apenas o cliente pode cancelar");
+                if (!ehCliente)
+                    throw new IllegalArgumentException("Apenas o cliente pode cancelar");
             }
             default -> throw new IllegalArgumentException("Status inválido");
         }
@@ -114,6 +128,7 @@ public class SolicitacaoService {
         s.setStatus(novoStatus);
         s.setAtualizadoEm(LocalDateTime.now());
         solicitacaoRepository.save(s);
+
         String texto;
         switch (novoStatus) {
             case ACEITA -> texto = "Sua solicitação foi aceita!";
@@ -123,14 +138,10 @@ public class SolicitacaoService {
             default -> texto = "Status atualizado: " + novoStatus;
         }
 
-        notificacaoService.enviar(
-                s.getCliente(),
-                "Atualização da solicitação",
-                texto,
+        notificacaoService.enviar(s.getCliente(), "Atualização da solicitação", texto,
                 Map.of("tipo", "STATUS_ALTERADO",
                         "solicitacaoId", s.getId(),
-                        "status", novoStatus.name())
-        );
+                        "status", novoStatus.name()));
         return SolicitacaoResumo.from(s);
     }
 }

@@ -31,6 +31,10 @@ public class Solicitacao {
     @Column(nullable = false)
     private LocalDateTime dataDesejada;
 
+    @ManyToOne
+    @JoinColumn(name = "servico_id")
+    private Servico servico;
+
     private Integer duracaoHoras;
 
     private Double valorTotal;
