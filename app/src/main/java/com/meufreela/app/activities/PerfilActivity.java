@@ -14,6 +14,7 @@ import com.meufreela.app.network.ApiService;
 import com.meufreela.app.network.RetrofitClient;
 import com.meufreela.app.storage.TokenManager;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -34,8 +35,12 @@ public class PerfilActivity extends AppCompatActivity {
         api = RetrofitClient.getApiService(tokenManager);
 
         binding.botaoSair.setOnClickListener(v -> confirmarLogout());
+
         binding.botaoTornarFreelancer.setOnClickListener(v ->
                 startActivity(new Intent(this, TornarFreelancerActivity.class)));
+
+        // ✅ Botão Tornar-se Cliente
+        binding.botaoTornarCliente.setOnClickListener(v -> tornarCliente());
 
         carregarPerfil();
     }
@@ -51,7 +56,6 @@ public class PerfilActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<PerfilUsuario> call,
                                    Response<PerfilUsuario> response) {
-
                 if (response.isSuccessful() && response.body() != null) {
                     PerfilUsuario u = response.body();
 
@@ -67,13 +71,16 @@ public class PerfilActivity extends AppCompatActivity {
 
                     boolean ehFreelancer = u.temPapel("FREELANCER")
                             || "FREELANCER".equals(u.getTipo());
+                    boolean ehCliente = u.temPapel("CLIENTE")
+                            || "CLIENTE".equals(u.getTipo());
 
+                    // Mostra o botão de virar freelancer se ainda não for
                     binding.botaoTornarFreelancer.setVisibility(
                             ehFreelancer ? View.GONE : View.VISIBLE);
 
-                    android.util.Log.d("PERFIL_DEBUG",
-                            "tipo=" + u.getTipo() + " papeis=" + u.getPapeis()
-                                    + " ehFreelancer=" + ehFreelancer);
+                    // Mostra o botão de virar cliente se ainda não for
+                    binding.botaoTornarCliente.setVisibility(
+                            ehCliente ? View.GONE : View.VISIBLE);
                 }
             }
 
@@ -83,6 +90,46 @@ public class PerfilActivity extends AppCompatActivity {
                         "Erro: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void tornarCliente() {
+        new AlertDialog.Builder(this)
+                .setTitle("Ativar perfil de cliente")
+                .setMessage("Você poderá contratar serviços de outros freelancers. Deseja ativar?")
+                .setPositiveButton("Sim", (d, w) -> {
+                    api.tornarCliente().enqueue(new Callback<ResponseBody>() {
+                        @Override
+                        public void onResponse(Call<ResponseBody> call,
+                                               Response<ResponseBody> response) {
+                            if (response.isSuccessful()) {
+                                Toast.makeText(PerfilActivity.this,
+                                        "Você agora também pode contratar! 🎉",
+                                        Toast.LENGTH_LONG).show();
+                                carregarPerfil();
+                            } else {
+                                try {
+                                    org.json.JSONObject obj = new org.json.JSONObject(
+                                            response.errorBody().string());
+                                    Toast.makeText(PerfilActivity.this,
+                                            obj.getString("mensagem"),
+                                            Toast.LENGTH_LONG).show();
+                                } catch (Exception e) {
+                                    Toast.makeText(PerfilActivity.this,
+                                            "Erro ao ativar", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<ResponseBody> call, Throwable t) {
+                            Toast.makeText(PerfilActivity.this,
+                                    "Erro de conexão: " + t.getMessage(),
+                                    Toast.LENGTH_LONG).show();
+                        }
+                    });
+                })
+                .setNegativeButton("Cancelar", null)
+                .show();
     }
 
     private void confirmarLogout() {

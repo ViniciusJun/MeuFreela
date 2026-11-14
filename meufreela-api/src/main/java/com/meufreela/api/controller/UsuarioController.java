@@ -45,6 +45,23 @@ public class UsuarioController {
         return ResponseEntity.ok(Map.of("status", "ok"));
     }
 
+    @PostMapping("/tornar-cliente")
+    public ResponseEntity<Map<String, Object>> tornarCliente(Authentication auth) {
+        Usuario u = repository.findByEmail(auth.getName())
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
+
+        if (u.temPapel(Usuario.TipoUsuario.CLIENTE)) {
+            throw new IllegalArgumentException("Você já é cliente");
+        }
+
+        u.adicionarPapel(Usuario.TipoUsuario.CLIENTE);
+        repository.save(u);
+
+        return ResponseEntity.ok(Map.of(
+                "mensagem", "Perfil de cliente ativado!",
+                "papeis", u.getPapeis().stream().map(Enum::name).toList()
+        ));
+    }
     @PostMapping("/tornar-freelancer")
     public ResponseEntity<Map<String, Object>> tornarFreelancer(
             Authentication auth,

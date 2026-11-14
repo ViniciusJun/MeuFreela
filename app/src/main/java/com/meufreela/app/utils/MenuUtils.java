@@ -33,91 +33,79 @@ public class MenuUtils {
 
         TextView opcaoPerfil = dialog.findViewById(R.id.opcaoPerfil);
         TextView opcaoSolicitacoes = dialog.findViewById(R.id.opcaoSolicitacoes);
-        TextView opcaoAvaliacoes = dialog.findViewById(R.id.opcaoAvaliacoes);
+        TextView opcaoMeusServicos = dialog.findViewById(R.id.opcaoMeusServicos);
 
-        // --- Meu perfil ---
-        if (opcaoPerfil != null) {
-            opcaoPerfil.setOnClickListener(v -> {
-                activity.startActivity(new Intent(activity, PerfilActivity.class));
-                dialog.dismiss();
-            });
-        }
+        // Ações fixas
+        opcaoPerfil.setOnClickListener(v -> {
+            activity.startActivity(new Intent(activity, PerfilActivity.class));
+            dialog.dismiss();
+        });
 
-        // --- Minhas avaliações ---
-        if (opcaoAvaliacoes != null) {
-            opcaoAvaliacoes.setOnClickListener(v -> {
-                activity.startActivity(new Intent(activity, AvaliacoesActivity.class));
-                dialog.dismiss();
-            });
-        }
+        // Busca o perfil para decidir o que mostrar
+        api.meuPerfil().enqueue(new Callback<PerfilUsuario>() {
+            @Override
+            public void onResponse(Call<PerfilUsuario> call,
+                                   Response<PerfilUsuario> response) {
+                if (!response.isSuccessful() || response.body() == null) {
+                    // fallback: mostra só o básico
+                    configurarSolicitacoesPadrao(activity, dialog, opcaoSolicitacoes);
+                    return;
+                }
 
-        // --- Minhas solicitações / Trocar de modo ---
-        if (opcaoSolicitacoes != null) {
-            api.meuPerfil().enqueue(new Callback<PerfilUsuario>() {
-                @Override
-                public void onResponse(Call<PerfilUsuario> call,
-                                       Response<PerfilUsuario> response) {
+                PerfilUsuario u = response.body();
+                boolean ehCliente = u.temPapel("CLIENTE");
+                boolean ehFreelancer = u.temPapel("FREELANCER");
+                boolean ambos = ehCliente && ehFreelancer;
 
-                    // CORREÇÃO 1: declarar u ANTES de qualquer uso.
-                    PerfilUsuario u = (response.isSuccessful()) ? response.body() : null;
-
-                    // Fallback: se não há perfil, cai no menu padrão e encerra.
-                    if (u == null) {
-                        configurarMinhasSolicitacoes(activity, dialog, opcaoSolicitacoes);
-                        return;
-                    }
-
-                    // CORREÇÃO 2: opcaoMeusServicos pode não existir no layout.
-                    TextView opcaoMeusServicos = dialog.findViewById(R.id.opcaoMeusServicos);
-                    if (opcaoMeusServicos != null) {
-                        // CORREÇÃO 3: sem "else", o item poderia herdar visibilidade
-                        // do XML e aparecer para clientes que não são freelancers.
-                        if (u.temPapel("FREELANCER")) {
-                            opcaoMeusServicos.setVisibility(View.VISIBLE);
-                            opcaoMeusServicos.setOnClickListener(v -> {
-                                activity.startActivity(
-                                        new Intent(activity, MeusServicosActivity.class));
-                                dialog.dismiss();
-                            });
-                        } else {
-                            opcaoMeusServicos.setVisibility(View.GONE);
-                        }
-                    }
-
-                    boolean temAmbos = u.temPapel("FREELANCER") && u.temPapel("CLIENTE");
-
-                    if (temAmbos) {
-                        boolean estaNoModoCliente = activity instanceof MainClienteActivity;
-                        opcaoSolicitacoes.setText(estaNoModoCliente
-                                ? "🔧  Mudar para modo Freelancer"
-                                : "🛒  Mudar para modo Cliente");
+                // 📋 Minhas solicitações — sempre visível, mas o rótulo muda
+                if (ambos) {
+                    boolean estaNoModoCliente = activity instanceof MainClienteActivity;
+                    if (estaNoModoCliente) {
+                        opcaoSolicitacoes.setText("🛠  Mudar para modo Freelancer");
                         opcaoSolicitacoes.setOnClickListener(v -> {
-                            Class<?> destino = estaNoModoCliente
-                                    ? MainFreelancerActivity.class
-                                    : MainClienteActivity.class;
-                            activity.startActivity(new Intent(activity, destino));
+                            activity.startActivity(new Intent(activity,
+                                    MainFreelancerActivity.class));
                             dialog.dismiss();
                         });
                     } else {
-                        configurarMinhasSolicitacoes(activity, dialog, opcaoSolicitacoes);
+                        opcaoSolicitacoes.setText("🛒  Mudar para modo Cliente");
+                        opcaoSolicitacoes.setOnClickListener(v -> {
+                            activity.startActivity(new Intent(activity,
+                                    MainClienteActivity.class));
+                            dialog.dismiss();
+                        });
                     }
+                } else {
+                    configurarSolicitacoesPadrao(activity, dialog, opcaoSolicitacoes);
                 }
 
-                @Override
-                public void onFailure(Call<PerfilUsuario> call, Throwable t) {
-                    configurarMinhasSolicitacoes(activity, dialog, opcaoSolicitacoes);
+                // 🛠 Meus serviços — só para freelancer
+                if (ehFreelancer) {
+                    opcaoMeusServicos.setVisibility(View.VISIBLE);
+                    opcaoMeusServicos.setOnClickListener(v -> {
+                        activity.startActivity(new Intent(activity,
+                                MeusServicosActivity.class));
+                        dialog.dismiss();
+                    });
+                } else {
+                    opcaoMeusServicos.setVisibility(View.GONE);
                 }
-            });
-        }
+            }
+
+            @Override
+            public void onFailure(Call<PerfilUsuario> call, Throwable t) {
+                configurarSolicitacoesPadrao(activity, dialog, opcaoSolicitacoes);
+            }
+        });
 
         dialog.show();
     }
 
-    private static void configurarMinhasSolicitacoes(Activity activity,
+    private static void configurarSolicitacoesPadrao(Activity activity,
                                                      BottomSheetDialog dialog,
-                                                     TextView opcao) {
-        opcao.setText("📋  Minhas solicitações");
-        opcao.setOnClickListener(v -> {
+                                                     TextView opcaoSolicitacoes) {
+        opcaoSolicitacoes.setText("📋  Minhas solicitações");
+        opcaoSolicitacoes.setOnClickListener(v -> {
             activity.startActivity(new Intent(activity, MinhasSolicitacoesActivity.class));
             dialog.dismiss();
         });

@@ -44,26 +44,36 @@ public class DetalheServicoActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     servicoAtual = response.body();
                     preencher(servicoAtual);
+                } else {
+                    Toast.makeText(DetalheServicoActivity.this,
+                            "Erro ao carregar serviço", Toast.LENGTH_SHORT).show();
                 }
             }
+
             @Override
             public void onFailure(Call<Servico> call, Throwable t) {
                 Toast.makeText(DetalheServicoActivity.this,
-                        "Erro: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                        "Erro: " + t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
 
         binding.botaoContratar.setOnClickListener(v -> {
-            if (servicoAtual == null) return;
+            if (servicoAtual == null) {
+                Toast.makeText(this, "Aguarde o serviço carregar...",
+                        Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            //Todos os extras, incluindo SERVICO_ID
             Intent i = new Intent(this, NovaSolicitacaoActivity.class);
             i.putExtra(NovaSolicitacaoActivity.EXTRA_FREELANCER_ID,
                     servicoAtual.getFreelancerId());
             i.putExtra(NovaSolicitacaoActivity.EXTRA_FREELANCER_NOME,
                     servicoAtual.getFreelancerNome());
             i.putExtra(NovaSolicitacaoActivity.EXTRA_FREELANCER_PRECO,
-                    servicoAtual.getPreco());
+                    servicoAtual.getPreco() != null ? servicoAtual.getPreco() : 0.0);
             i.putExtra(NovaSolicitacaoActivity.EXTRA_SERVICO_ID,
-                    servicoAtual.getId());
+                    servicoAtual.getId());              // ← ESSENCIAL
             i.putExtra(NovaSolicitacaoActivity.EXTRA_SERVICO_TITULO,
                     servicoAtual.getTitulo());
             startActivity(i);

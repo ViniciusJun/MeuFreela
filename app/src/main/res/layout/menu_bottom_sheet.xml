@@ -47,6 +47,7 @@
         android:textSize="16sp"
         android:padding="14dp" />
 
+    <!-- Meus serviços (só para freelancer) -->
     <TextView
         android:id="@+id/opcaoMeusServicos"
         android:layout_width="match_parent"

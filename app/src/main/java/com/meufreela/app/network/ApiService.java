@@ -87,6 +87,9 @@ public interface ApiService {
     @POST("usuarios/tornar-freelancer")
     Call<ResponseBody> tornarFreelancer(@Body TornarFreelancerRequest request);
 
+    @POST("usuarios/tornar-cliente")
+    Call<ResponseBody> tornarCliente();
+
     // Serviços
     @GET("servicos")
     Call<List<Servico>> listarServicos(@Query("categoria") String categoria);

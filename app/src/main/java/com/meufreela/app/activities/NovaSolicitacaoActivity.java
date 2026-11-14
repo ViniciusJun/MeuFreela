@@ -3,7 +3,9 @@ package com.meufreela.app.activities;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -38,7 +40,6 @@ public class NovaSolicitacaoActivity extends AppCompatActivity {
     private double precoHora;
     private Calendar dataSelecionada;
 
-    // CORREÇÃO: promovidas a campos da classe para ficarem visíveis em enviar()
     private String freelancerId;
     private String servicoId;
 
@@ -57,16 +58,21 @@ public class NovaSolicitacaoActivity extends AppCompatActivity {
         String servicoTitulo = getIntent().getStringExtra(EXTRA_SERVICO_TITULO);
         precoHora = getIntent().getDoubleExtra(EXTRA_FREELANCER_PRECO, 0);
 
-        binding.textFreelancer.setText("Contratar: " + nome);
-        atualizarValor();
+        // 🔍 Log para confirmar que os IDs chegaram
+        Log.d("NOVA_SOLICITACAO", "freelancerId=" + freelancerId
+                + " servicoId=" + servicoId);
 
+        if (servicoTitulo != null) {
+            binding.textFreelancer.setText("Serviço: " + servicoTitulo
+                    + "\npor " + nome);
+        } else {
+            binding.textFreelancer.setText("Contratar: " + nome);
+        }
+
+        atualizarValor();
         binding.editDuracao.setOnFocusChangeListener((v, has) -> atualizarValor());
         binding.editData.setOnClickListener(v -> abrirSeletorDataHora());
         binding.botaoEnviar.setOnClickListener(v -> enviar());
-
-        if (servicoTitulo != null) {
-            binding.textFreelancer.setText("Serviço: " + servicoTitulo);
-        }
     }
 
     private void abrirSeletorDataHora() {
@@ -82,7 +88,8 @@ public class NovaSolicitacaoActivity extends AppCompatActivity {
                         "dd/MM/yyyy HH:mm", Locale.getDefault());
                 binding.editData.setText(fmt.format(temp.getTime()));
             }, c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), true).show();
-        }, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)).show();
+        }, c.get(Calendar.YEAR), c.get(Calendar.MONTH),
+                c.get(Calendar.DAY_OF_MONTH)).show();
     }
 
     private void atualizarValor() {
@@ -95,7 +102,6 @@ public class NovaSolicitacaoActivity extends AppCompatActivity {
         }
     }
 
-    // CORREÇÃO: sem parâmetro — usa os campos freelancerId e servicoId
     private void enviar() {
         String descricao = texto(binding.editDescricao);
         String endereco = texto(binding.editEndereco);
@@ -122,28 +128,23 @@ public class NovaSolicitacaoActivity extends AppCompatActivity {
             return;
         }
 
-        // Validação preventiva: o backend exige servicoId OU freelancerId.
-        // Falhar aqui evita um round-trip ao servidor só para receber 400.
-        if ((servicoId == null || servicoId.isBlank())
-                && (freelancerId == null || freelancerId.isBlank())) {
-            Toast.makeText(this,
-                    "Erro: nenhum freelancer ou serviço informado.",
-                    Toast.LENGTH_LONG).show();
-            return;
-        }
-
-        // Formata para ISO-8601, sem timezone (compatível com LocalDateTime)
-        SimpleDateFormat iso = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US);
+        SimpleDateFormat iso = new SimpleDateFormat(
+                "yyyy-MM-dd'T'HH:mm:ss", Locale.US);
         String dataIso = iso.format(dataSelecionada.getTime());
 
         mostrarLoading(true);
+
+        // 🔍 Log final antes de enviar
+        Log.d("NOVA_SOLICITACAO", "Enviando: freelancerId=" + freelancerId
+                + " servicoId=" + servicoId);
 
         CriarSolicitacaoRequest req = new CriarSolicitacaoRequest(
                 freelancerId, servicoId, descricao, endereco, dataIso, horas);
 
         api.criarSolicitacao(req).enqueue(new Callback<Solicitacao>() {
             @Override
-            public void onResponse(Call<Solicitacao> call, Response<Solicitacao> response) {
+            public void onResponse(Call<Solicitacao> call,
+                                   Response<Solicitacao> response) {
                 mostrarLoading(false);
                 if (response.isSuccessful()) {
                     Toast.makeText(NovaSolicitacaoActivity.this,
@@ -166,12 +167,13 @@ public class NovaSolicitacaoActivity extends AppCompatActivity {
             public void onFailure(Call<Solicitacao> call, Throwable t) {
                 mostrarLoading(false);
                 Toast.makeText(NovaSolicitacaoActivity.this,
-                        "Erro de conexão: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                        "Erro de conexão: " + t.getMessage(),
+                        Toast.LENGTH_LONG).show();
             }
         });
     }
 
-    private String texto(android.widget.EditText e) {
+    private String texto(EditText e) {
         return e.getText() != null ? e.getText().toString().trim() : "";
     }
 
