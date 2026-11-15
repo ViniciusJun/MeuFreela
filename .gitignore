@@ -102,3 +102,4 @@ Thumbs.db
 # Análises locais
 deps-full.txt
 secrets-replace.txt
+.idea/
