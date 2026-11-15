@@ -36,6 +36,8 @@ import retrofit2.Response;
 
 public class PerfilActivity extends AppCompatActivity {
 
+    private static final String TAG = "PERFIL_UPLOAD";
+
     private ActivityPerfilBinding binding;
     private TokenManager tokenManager;
     private ApiService api;
@@ -50,19 +52,28 @@ public class PerfilActivity extends AppCompatActivity {
         tokenManager = new TokenManager(this);
         api = RetrofitClient.getApiService(tokenManager);
 
-        // Registra o picker de imagem
         pickImage = registerForActivityResult(
                 new ActivityResultContracts.GetContent(),
-                uri -> { if (uri != null) enviarFoto(uri); });
+                uri -> {
+                    Log.d(TAG, "Picker retornou URI: " + uri);
+                    if (uri != null) enviarFoto(uri);
+                    else Log.w(TAG, "Picker retornou null (usuário cancelou?)");
+                });
 
-        binding.botaoEscolherFoto.setOnClickListener(v ->
-                pickImage.launch("image/*"));
+        binding.botaoEscolherFoto.setOnClickListener(v -> {
+            Log.d(TAG, "FAB clicado — abrindo picker");
+            try {
+                pickImage.launch("image/*");
+            } catch (Exception e) {
+                Log.e(TAG, "Erro ao abrir picker", e);
+                Toast.makeText(this, "Erro ao abrir seletor: " + e.getMessage(),
+                        Toast.LENGTH_LONG).show();
+            }
+        });
 
         binding.botaoSair.setOnClickListener(v -> confirmarLogout());
-
         binding.botaoTornarFreelancer.setOnClickListener(v ->
                 startActivity(new Intent(this, TornarFreelancerActivity.class)));
-
         binding.botaoTornarCliente.setOnClickListener(v -> tornarCliente());
     }
 
@@ -96,10 +107,13 @@ public class PerfilActivity extends AppCompatActivity {
                     binding.botaoTornarCliente.setVisibility(
                             ehCliente ? View.GONE : View.VISIBLE);
 
-                    // Carrega foto (com Glide cacheado)
                     String fotoUrl = u.getFotoUrl();
+                    Log.d(TAG, "fotoUrl recebido: [" + fotoUrl + "]");
+
                     if (fotoUrl != null && !fotoUrl.isEmpty()) {
                         String urlCompleta = ApiConfig.SERVER_URL_DEV + fotoUrl;
+                        Log.d(TAG, "Carregando Glide: " + urlCompleta);
+
                         Glide.with(PerfilActivity.this)
                                 .load(urlCompleta)
                                 .placeholder(android.R.drawable.ic_menu_myplaces)
@@ -112,6 +126,7 @@ public class PerfilActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<PerfilUsuario> call, Throwable t) {
+                Log.e(TAG, "Falha ao carregar perfil", t);
                 Toast.makeText(PerfilActivity.this,
                         "Erro: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
@@ -119,17 +134,29 @@ public class PerfilActivity extends AppCompatActivity {
     }
 
     private void enviarFoto(Uri uri) {
+        Log.d(TAG, "enviarFoto iniciado, URI=" + uri);
         binding.progressFoto.setVisibility(View.VISIBLE);
 
         try {
-            // Copia a URI para um arquivo temporário
             File tempFile = new File(getCacheDir(), "avatar_upload.jpg");
+
             try (InputStream is = getContentResolver().openInputStream(uri);
                  FileOutputStream fos = new FileOutputStream(tempFile)) {
-                if (is == null) throw new RuntimeException("Não foi possível abrir");
+
+                if (is == null) throw new RuntimeException("openInputStream retornou null");
+
                 byte[] buffer = new byte[8192];
                 int n;
-                while ((n = is.read(buffer)) > 0) fos.write(buffer, 0, n);
+                long total = 0;
+                while ((n = is.read(buffer)) > 0) {
+                    fos.write(buffer, 0, n);
+                    total += n;
+                }
+                Log.d(TAG, "Arquivo copiado: " + total + " bytes");
+            }
+
+            if (tempFile.length() == 0) {
+                throw new RuntimeException("Arquivo vazio após cópia");
             }
 
             MediaType mediaType = MediaType.parse("image/jpeg");
@@ -137,25 +164,30 @@ public class PerfilActivity extends AppCompatActivity {
             MultipartBody.Part part = MultipartBody.Part
                     .createFormData("file", "avatar.jpg", rb);
 
+            Log.d(TAG, "Chamando POST /api/usuarios/foto");
+
             api.uploadFoto(part).enqueue(new Callback<ResponseBody>() {
                 @Override
                 public void onResponse(Call<ResponseBody> call,
                                        Response<ResponseBody> response) {
                     binding.progressFoto.setVisibility(View.GONE);
+                    Log.d(TAG, "Resposta upload: HTTP " + response.code());
+
                     if (response.isSuccessful()) {
+                        Glide.with(PerfilActivity.this).clear(binding.imageFoto);
                         Toast.makeText(PerfilActivity.this,
                                 "Foto atualizada!", Toast.LENGTH_SHORT).show();
                         carregarPerfil();
                     } else {
                         try {
-                            JSONObject obj = new JSONObject(
-                                    response.errorBody().string());
+                            String erro = response.errorBody().string();
+                            Log.e(TAG, "Erro backend: " + erro);
                             Toast.makeText(PerfilActivity.this,
-                                    obj.getString("mensagem"),
-                                    Toast.LENGTH_LONG).show();
+                                    "Erro: " + erro, Toast.LENGTH_LONG).show();
                         } catch (Exception e) {
                             Toast.makeText(PerfilActivity.this,
-                                    "Erro ao subir imagem", Toast.LENGTH_SHORT).show();
+                                    "Erro HTTP " + response.code(),
+                                    Toast.LENGTH_SHORT).show();
                         }
                     }
                 }
@@ -163,7 +195,7 @@ public class PerfilActivity extends AppCompatActivity {
                 @Override
                 public void onFailure(Call<ResponseBody> call, Throwable t) {
                     binding.progressFoto.setVisibility(View.GONE);
-                    Log.e("PERFIL", "Falha no upload", t);
+                    Log.e(TAG, "Falha de rede", t);
                     Toast.makeText(PerfilActivity.this,
                             "Erro de conexão: " + t.getMessage(),
                             Toast.LENGTH_LONG).show();
@@ -172,8 +204,9 @@ public class PerfilActivity extends AppCompatActivity {
 
         } catch (Exception e) {
             binding.progressFoto.setVisibility(View.GONE);
+            Log.e(TAG, "Exceção antes do upload", e);
             Toast.makeText(this,
-                    "Não foi possível ler a imagem", Toast.LENGTH_LONG).show();
+                    "Erro: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 

@@ -26,11 +26,13 @@
             android:orientation="vertical"
             android:padding="20dp">
 
-            <!-- Foto de perfil -->
+            <!-- Foto + FAB -->
             <FrameLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal">
+                android:layout_gravity="center_horizontal"
+                android:clipChildren="false"
+                android:clipToPadding="false">
 
                 <ImageView
                     android:id="@+id/imageFoto"
@@ -46,7 +48,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="bottom|end"
-                    android:layout_margin="4dp"
+                    android:layout_margin="8dp"
+                    android:elevation="8dp"
+                    android:clickable="true"
+                    android:focusable="true"
                     android:contentDescription="Trocar foto"
                     android:src="@android:drawable/ic_menu_camera" />
             </FrameLayout>
@@ -59,7 +64,6 @@
                 android:layout_marginTop="8dp"
                 android:visibility="gone" />
 
-            <!-- Dados básicos -->
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
