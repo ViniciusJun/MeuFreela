@@ -1,33 +1,99 @@
-*.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
-local.properties
+# ============================================================
+# SEGREDOS — NUNCA commitar
+# ============================================================
 
-# Segredos
+# Firebase
 firebase-service-account.json
 google-services.json
+
+# Spring Boot — sobrescritas locais
 application-local.properties
 application-secrets.properties
 
-# Maven
+# Variáveis de ambiente
+.env
+.env.*
+*.env
+
+# Keystore Android (CRÍTICO — perda/vazamento compromete a Play Store)
+*.jks
+*.keystore
+key.properties
+play-store-key.json
+
+# Certificados e chaves
+*.pem
+*.p12
+*.key
+
+# ============================================================
+# JAVA / MAVEN
+# ============================================================
+
 target/
 *.class
 
+# NÃO ignorar: .mvn/wrapper/maven-wrapper.jar (necessário para ./mvnw)
+# Se você usa wrapper, garanta que este NÃO seja ignorado:
+!.mvn/wrapper/maven-wrapper.jar
+
+# Logs
+*.log
+logs/
+
+# PID de processos
+*.pid
+
+# ============================================================
+# ANDROID
+# ============================================================
+
+.gradle/
+local.properties
+/captures
+.externalNativeBuild/
+.cxx/
+build/
+
+# ============================================================
 # IDE
+# ============================================================
+
+# IntelliJ IDEA
 .idea/
 *.iml
+
+# VS Code
 .vscode/
 
-# Docker
+# Eclipse
+.project
+.classpath
+.settings/
+.factorypath
+
+# Spring Tool Suite
+.springBeans
+.sts4-cache
+
+# ============================================================
+# SISTEMA OPERACIONAL
+# ============================================================
+
+.DS_Store
+Thumbs.db
+
+# ============================================================
+# EDITORES
+# ============================================================
+
+*.swp
+*.swo
+*~
+
+# ============================================================
+# DOCKER (apenas artefatos locais)
+# ============================================================
+
+# NÃO ignorar: Dockerfile, docker-compose.yml (devem ir para o repo)
 .docker/

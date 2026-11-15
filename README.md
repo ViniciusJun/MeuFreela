@@ -68,7 +68,7 @@ O **MeuFreela** é composto por dois componentes principais:
 
 1. **Backend** — API RESTful em **Java 21 + Spring Boot**, responsável por autenticação, gestão de usuários, solicitações de serviço, avaliações, chat via WebSocket e envio de notificações push.
 2. **Aplicativo Android** — cliente nativo em **Java 17**, consumindo a API via Retrofit e mantendo o chat aberto por WebSocket.
-
+3. **Testes**: 74 testes (JUnit + Mockito + MockMvc + JUnit4 Android)
 O objetivo do projeto é oferecer uma plataforma confiável para contratação de serviços freelance, com foco em reputação, comunicação direta e (futuramente) garantia de pagamento.
 
 ---
