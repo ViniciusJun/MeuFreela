@@ -21,6 +21,21 @@
             android:scaleType="centerCrop"
             android:src="@android:drawable/ic_menu_myplaces" />
 
+        <HorizontalScrollView
+            android:id="@+id/containerFotos"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:scrollbars="none"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:id="@+id/linearFotos"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" />
+        </HorizontalScrollView>
+
         <TextView
             android:id="@+id/textTitulo"
             android:layout_width="match_parent"

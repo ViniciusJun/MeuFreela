@@ -16,12 +16,12 @@ import com.meufreela.app.models.response.PerfilUsuario;
 import com.meufreela.app.models.response.Servico;
 import com.meufreela.app.models.response.Solicitacao;
 
+
 import okhttp3.MultipartBody;
 import okhttp3.ResponseBody;
 
 import java.util.List;
 
-import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
@@ -118,4 +118,15 @@ public interface ApiService {
     @Multipart
     @POST("usuarios/foto")
     Call<ResponseBody> uploadFoto(@Part MultipartBody.Part file);
+
+    @Multipart
+    @POST("servicos/{id}/fotos")
+    Call<Servico> uploadFotoServico(
+            @Path("id") String servicoId,
+            @Part MultipartBody.Part file);
+
+    @DELETE("servicos/{id}/fotos")
+    Call<Servico> removerFotoServico(
+            @Path("id") String servicoId,
+            @Query("url") String url);
 }

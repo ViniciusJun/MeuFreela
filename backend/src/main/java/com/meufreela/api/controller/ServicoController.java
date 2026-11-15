@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -62,5 +64,21 @@ public class ServicoController {
     public ResponseEntity<?> excluir(Authentication auth, @PathVariable String id) {
         service.excluir(auth.getName(), id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping(value = "/{id}/fotos", consumes = "multipart/form-data")
+    public ResponseEntity<ServicoResumo> uploadFoto(
+            Authentication auth,
+            @PathVariable String id,
+            @RequestParam("file") MultipartFile file) {
+        return ResponseEntity.ok(service.adicionarFoto(auth.getName(), id, file));
+    }
+
+    @DeleteMapping("/{id}/fotos")
+    public ResponseEntity<ServicoResumo> removerFoto(
+            Authentication auth,
+            @PathVariable String id,
+            @RequestParam("url") String url) {
+        return ResponseEntity.ok(service.removerFoto(auth.getName(), id, url));
     }
 }

@@ -7,6 +7,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.meufreela.app.config.ApiConfig;
 import com.meufreela.app.databinding.ActivityDetalheServicoBinding;
 import com.meufreela.app.models.response.Servico;
 import com.meufreela.app.network.ApiService;
@@ -105,6 +106,28 @@ public class DetalheServicoActivity extends AppCompatActivity {
                     .circleCrop()
                     .into(binding.imageFreelancer);
         }
+
+        if (s.getFotos() != null && !s.getFotos().isEmpty()) {
+            binding.containerFotos.setVisibility(View.VISIBLE);
+            binding.linearFotos.removeAllViews();
+
+            for (String url : s.getFotos()) {
+                android.widget.ImageView iv = new android.widget.ImageView(this);
+                android.widget.LinearLayout.LayoutParams lp =
+                        new android.widget.LinearLayout.LayoutParams(dp(180), dp(180));
+                lp.setMargins(0, 0, dp(8), 0);
+                iv.setLayoutParams(lp);
+                iv.setScaleType(android.widget.ImageView.ScaleType.CENTER_CROP);
+                iv.setBackgroundColor(0xFFE0E0E0);
+
+                com.bumptech.glide.Glide.with(this)
+                        .load(ApiConfig.SERVER_URL_DEV + url)
+                        .placeholder(android.R.drawable.ic_menu_gallery)
+                        .into(iv);
+
+                binding.linearFotos.addView(iv);
+            }
+        }
     }
 
     private String rotuloCategoria(String c) {
@@ -117,5 +140,9 @@ public class DetalheServicoActivity extends AppCompatActivity {
             case "BELEZA": return "Beleza";
             default: return c;
         }
+    }
+
+    private int dp(int v) {
+        return Math.round(v * getResources().getDisplayMetrics().density);
     }
 }

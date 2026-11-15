@@ -2,9 +2,10 @@ package com.meufreela.api.dto;
 
 import com.meufreela.api.entity.CategoriaServico;
 import com.meufreela.api.entity.Servico;
-import com.meufreela.api.entity.Usuario;      // ← import que faltava
+import com.meufreela.api.entity.Usuario;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record ServicoResumo(
         String id,
@@ -18,24 +19,27 @@ public record ServicoResumo(
         CategoriaServico categoria,
         Double preco,
         boolean ativo,
+        List<String> fotos,
         LocalDateTime criadoEm
 ) {
     public static ServicoResumo from(Servico s) {
-        Usuario f = s.getFreelancer();     // ← variável declarada
-        String foto = f.getFotoUrl() != null ? f.getFotoUrl() : "";
+        Usuario f = s.getFreelancer();
+        String fotoFreelancer = f.getFotoUrl() != null ? f.getFotoUrl() : "";
+        List<String> fotos = s.getFotos() != null ? s.getFotos() : List.of();
 
         return new ServicoResumo(
                 s.getId(),
                 f.getId(),
                 f.getNome(),
-                foto,                       // ← vírgula
-                f.isVerificado(),           // ← trocado de s.getFreelancer() para f
+                fotoFreelancer,
+                f.isVerificado(),
                 f.getAvaliacaoMedia(),
                 s.getTitulo(),
                 s.getDescricao(),
                 s.getCategoria(),
                 s.getPreco(),
                 s.isAtivo(),
+                fotos,
                 s.getCriadoEm()
         );
     }

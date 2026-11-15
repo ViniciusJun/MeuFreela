@@ -20,6 +20,9 @@ public class ServicoAdapter extends RecyclerView.Adapter<ServicoAdapter.VH> {
         void onServicoClick(Servico s);
         void onPausar(Servico s);
         void onExcluir(Servico s);
+
+        // CORREÇÃO: Adicionado 'default' para não quebrar telas que não usam fotos (ex: MainClienteActivity)
+        default void onGerenciarFotos(Servico s) {}
     }
 
     private final List<Servico> itens = new ArrayList<>();
@@ -52,6 +55,14 @@ public class ServicoAdapter extends RecyclerView.Adapter<ServicoAdapter.VH> {
         h.binding.textTitulo.setText(s.getTitulo());
         h.binding.textDescricao.setText(s.getDescricao());
         h.binding.textCategoria.setText(rotuloCategoria(s.getCategoria()));
+
+        // O botão de fotos só aparece se estiver no modo dono
+        if (modoDono) {
+            h.binding.botaoFotos.setVisibility(View.VISIBLE);
+            h.binding.botaoFotos.setOnClickListener(v -> acoes.onGerenciarFotos(s));
+        } else {
+            h.binding.botaoFotos.setVisibility(View.GONE);
+        }
 
         if (!modoDono) {
             h.binding.textFreelancer.setText(

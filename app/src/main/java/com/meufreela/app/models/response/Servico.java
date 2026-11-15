@@ -1,5 +1,7 @@
 package com.meufreela.app.models.response;
 
+import java.util.List;
+
 public class Servico {
     private String id;
     private String freelancerId;
@@ -13,6 +15,7 @@ public class Servico {
     private Double preco;
     private boolean ativo;
     private String criadoEm;
+    private List<String> fotos;
 
     public String getId() { return id; }
     public String getFreelancerId() { return freelancerId; }
@@ -26,4 +29,7 @@ public class Servico {
     public Double getPreco() { return preco; }
     public boolean isAtivo() { return ativo; }
     public String getCriadoEm() { return criadoEm; }
+    public List<String> getFotos() {
+        return fotos != null ? fotos : new java.util.ArrayList<>();
+    }
 }

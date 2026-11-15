@@ -119,4 +119,12 @@ public class MeusServicosActivity extends AppCompatActivity
                 .setNegativeButton("Cancelar", null)
                 .show();
     }
+
+    @Override
+    public void onGerenciarFotos(Servico s) {
+        Intent i = new Intent(this, GerenciarFotosActivity.class);
+        i.putExtra(GerenciarFotosActivity.EXTRA_SERVICO_ID, s.getId());
+        i.putExtra(GerenciarFotosActivity.EXTRA_SERVICO_TITULO, s.getTitulo());
+        startActivity(i);
+    }
 }

@@ -54,6 +54,7 @@
         <activity android:name=".activities.MeusServicosActivity" android:exported="false" />
         <activity android:name=".activities.PublicarServicoActivity" android:exported="false" />
         <activity android:name=".activities.DetalheServicoActivity" android:exported="false" />
+        <activity android:name=".activities.GerenciarFotosActivity" android:exported="false" />
 
     </application>
 </manifest>

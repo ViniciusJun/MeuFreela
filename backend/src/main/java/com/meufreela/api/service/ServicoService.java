@@ -11,6 +11,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.meufreela.api.exception.OperacaoNaoPermitidaException;
+import com.meufreela.api.service.UploadService;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
 
 import java.util.List;
 
@@ -20,6 +23,8 @@ public class ServicoService {
 
     private final ServicoRepository servicoRepository;
     private final UsuarioRepository usuarioRepository;
+    private static final int MAX_FOTOS = 5;
+    private final UploadService uploadService;
 
     @Transactional
     public ServicoResumo criar(String email, CriarServicoRequest req) {
@@ -97,6 +102,51 @@ public class ServicoService {
         }
 
         s.setAtivo(!s.isAtivo());
+        servicoRepository.save(s);
+        return ServicoResumo.from(s);
+    }
+
+    @Transactional
+    public ServicoResumo adicionarFoto(String email, String servicoId, MultipartFile file) {
+        Usuario u = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
+
+        Servico s = servicoRepository.findById(servicoId)
+                .orElseThrow(() -> new IllegalArgumentException("Serviço não encontrado"));
+
+        // CORREÇÃO AQUI
+        if (!s.getFreelancer().getId().equals(u.getId())) {
+            throw new OperacaoNaoPermitidaException("Você não é dono deste serviço");
+        }
+
+        if (s.getFotos().size() >= MAX_FOTOS) {
+            throw new IllegalArgumentException("Máximo de " + MAX_FOTOS + " fotos por serviço");
+        }
+
+        try {
+            String url = uploadService.salvarFotoServico(servicoId, file);
+            s.getFotos().add(url);
+            servicoRepository.save(s);
+            return ServicoResumo.from(s);
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Erro ao salvar imagem: " + e.getMessage());
+        }
+    }
+
+    @Transactional
+    public ServicoResumo removerFoto(String email, String servicoId, String urlFoto) {
+        Usuario u = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
+
+        Servico s = servicoRepository.findById(servicoId)
+                .orElseThrow(() -> new IllegalArgumentException("Serviço não encontrado"));
+
+        // CORREÇÃO AQUI
+        if (!s.getFreelancer().getId().equals(u.getId())) {
+            throw new OperacaoNaoPermitidaException("Você não é dono deste serviço");
+        }
+
+        s.getFotos().remove(urlFoto);
         servicoRepository.save(s);
         return ServicoResumo.from(s);
     }

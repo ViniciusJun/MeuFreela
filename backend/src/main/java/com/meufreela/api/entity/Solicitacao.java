@@ -2,6 +2,11 @@ package com.meufreela.api.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.FetchType;
+import java.util.ArrayList;
+import java.util.List;
 
 import java.time.LocalDateTime;
 
@@ -49,4 +54,11 @@ public class Solicitacao {
     private LocalDateTime criadoEm = LocalDateTime.now();
 
     private LocalDateTime atualizadoEm;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "servico_fotos",
+            joinColumns = @JoinColumn(name = "servico_id"))
+    @Column(name = "foto_url", length = 500)
+    @Builder.Default
+    private List<String> fotos = new ArrayList<>();
 }
