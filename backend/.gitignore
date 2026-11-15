@@ -32,7 +32,9 @@ build/
 ### VS Code ###
 .vscode/
 
+# Segredos
 firebase-service-account.json
 google-services.json
 application-local.properties
 application-secrets.properties
+
