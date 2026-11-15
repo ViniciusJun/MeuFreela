@@ -97,3 +97,5 @@ Thumbs.db
 
 # NÃO ignorar: Dockerfile, docker-compose.yml (devem ir para o repo)
 .docker/
+
+!.github/fixtures/google-services.json

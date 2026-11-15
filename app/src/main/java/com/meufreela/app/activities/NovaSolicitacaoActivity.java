@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.meufreela.app.databinding.ActivityNovaSolicitacaoBinding;
 import com.meufreela.app.models.request.CriarSolicitacaoRequest;
+import com.meufreela.app.models.response.Servico;
 import com.meufreela.app.models.response.Solicitacao;
 import com.meufreela.app.network.ApiService;
 import com.meufreela.app.network.RetrofitClient;
@@ -34,6 +35,7 @@ public class NovaSolicitacaoActivity extends AppCompatActivity {
     public static final String EXTRA_FREELANCER_PRECO = "fpreco";
     public static final String EXTRA_SERVICO_ID = "servico_id";
     public static final String EXTRA_SERVICO_TITULO = "servico_titulo";
+    public static final String EXTRA_SERVICO_PRECO = "servico_preco";   // ← novo
 
     private ActivityNovaSolicitacaoBinding binding;
     private ApiService api;
@@ -56,11 +58,25 @@ public class NovaSolicitacaoActivity extends AppCompatActivity {
         servicoId = getIntent().getStringExtra(EXTRA_SERVICO_ID);
         String nome = getIntent().getStringExtra(EXTRA_FREELANCER_NOME);
         String servicoTitulo = getIntent().getStringExtra(EXTRA_SERVICO_TITULO);
-        precoHora = getIntent().getDoubleExtra(EXTRA_FREELANCER_PRECO, 0);
+        double precoFreelancer = getIntent().getDoubleExtra(EXTRA_FREELANCER_PRECO, 0);
+        double precoServico = getIntent().getDoubleExtra(EXTRA_SERVICO_PRECO, 0);
 
-        // 🔍 Log para confirmar que os IDs chegaram
         Log.d("NOVA_SOLICITACAO", "freelancerId=" + freelancerId
-                + " servicoId=" + servicoId);
+                + " servicoId=" + servicoId
+                + " precoFreelancer=" + precoFreelancer
+                + " precoServico=" + precoServico);
+
+        // Prioridade do preço:
+        // 1. Preço do serviço (quando contrata via serviço e a tela enviou)
+        // 2. Preço do freelancer (contratação direta)
+        // 3. Busca do backend (fallback quando serviço mas sem preço)
+        if (servicoId != null && precoServico > 0) {
+            precoHora = precoServico;
+        } else if (servicoId != null) {
+            buscarPrecoServico(servicoId);
+        } else {
+            precoHora = precoFreelancer;
+        }
 
         if (servicoTitulo != null) {
             binding.textFreelancer.setText("Serviço: " + servicoTitulo
@@ -73,6 +89,33 @@ public class NovaSolicitacaoActivity extends AppCompatActivity {
         binding.editDuracao.setOnFocusChangeListener((v, has) -> atualizarValor());
         binding.editData.setOnClickListener(v -> abrirSeletorDataHora());
         binding.botaoEnviar.setOnClickListener(v -> enviar());
+    }
+
+    /**
+     * Fallback: quando a tela de origem abre com servicoId mas não envia
+     * o preço do serviço, busca do backend para que o valor exibido bata
+     * com o valor que será gravado.
+     *
+     * Se falhar, não bloqueia o fluxo — o backend vai calcular corretamente
+     * de qualquer forma. O usuário pode ver 0,00 momentaneamente.
+     */
+    private void buscarPrecoServico(String idServico) {
+        api.detalheServico(idServico).enqueue(new Callback<Servico>() {
+            @Override
+            public void onResponse(Call<Servico> call, Response<Servico> response) {
+                if (response.isSuccessful()
+                        && response.body() != null
+                        && response.body().getPreco() != null) {
+                    precoHora = response.body().getPreco();
+                    atualizarValor();
+                }
+            }
+            @Override
+            public void onFailure(Call<Servico> call, Throwable t) {
+                Log.w("NOVA_SOLICITACAO",
+                        "Falha ao buscar preço do serviço; backend calculará ao salvar", t);
+            }
+        });
     }
 
     private void abrirSeletorDataHora() {
@@ -134,7 +177,6 @@ public class NovaSolicitacaoActivity extends AppCompatActivity {
 
         mostrarLoading(true);
 
-        // 🔍 Log final antes de enviar
         Log.d("NOVA_SOLICITACAO", "Enviando: freelancerId=" + freelancerId
                 + " servicoId=" + servicoId);
 

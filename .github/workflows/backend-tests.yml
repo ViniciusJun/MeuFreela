@@ -4,12 +4,12 @@ on:
   push:
     branches: [ main, develop ]
     paths:
-      - 'meufreela-api/**'
+      - 'backend/**'
       - '.github/workflows/backend-tests.yml'
   pull_request:
     branches: [ main, develop ]
     paths:
-      - 'meufreela-api/**'
+      - 'backend/**'
 
 jobs:
   test:
@@ -27,14 +27,30 @@ jobs:
           java-version: '21'
           cache: 'maven'
 
+      - name: Dar permissão ao Maven Wrapper
+        working-directory: ./backend
+        run: chmod +x mvnw
+
       - name: Rodar testes do backend
-        working-directory: ./meufreela-api
-        run: mvn clean test --no-transfer-progress
+        working-directory: ./backend
+        run: ./mvnw -B clean test --no-transfer-progress
+
+      - name: Empacotar JAR (sem re-testar)
+        working-directory: ./backend
+        run: ./mvnw -B package -DskipTests
 
       - name: Publicar relatório de testes
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: backend-test-reports
-          path: meufreela-api/target/surefire-reports/
+          path: backend/target/surefire-reports/
+          retention-days: 7
+
+      - name: Publicar JAR
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: meufreela-api-jar
+          path: backend/target/*.jar
           retention-days: 7

@@ -64,18 +64,25 @@ public class DetalheServicoActivity extends AppCompatActivity {
                 return;
             }
 
-            //Todos os extras, incluindo SERVICO_ID
             Intent i = new Intent(this, NovaSolicitacaoActivity.class);
+
+            // Dados do freelancer (para exibição e como fallback)
             i.putExtra(NovaSolicitacaoActivity.EXTRA_FREELANCER_ID,
                     servicoAtual.getFreelancerId());
             i.putExtra(NovaSolicitacaoActivity.EXTRA_FREELANCER_NOME,
                     servicoAtual.getFreelancerNome());
-            i.putExtra(NovaSolicitacaoActivity.EXTRA_FREELANCER_PRECO,
-                    servicoAtual.getPreco() != null ? servicoAtual.getPreco() : 0.0);
+
+            // Dados do serviço (fonte de verdade do preço)
             i.putExtra(NovaSolicitacaoActivity.EXTRA_SERVICO_ID,
-                    servicoAtual.getId());              // ← ESSENCIAL
+                    servicoAtual.getId());
             i.putExtra(NovaSolicitacaoActivity.EXTRA_SERVICO_TITULO,
                     servicoAtual.getTitulo());
+            // CORREÇÃO: envia o preço do serviço no campo CORRETO.
+            // Antes ia no EXTRA_FREELANCER_PRECO, o que era semanticamente
+            // errado (nome diz "freelancer", valor era do "serviço").
+            i.putExtra(NovaSolicitacaoActivity.EXTRA_SERVICO_PRECO,
+                    servicoAtual.getPreco() != null ? servicoAtual.getPreco() : 0.0);
+
             startActivity(i);
         });
     }
