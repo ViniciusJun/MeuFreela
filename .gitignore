@@ -99,7 +99,8 @@ Thumbs.db
 .docker/
 
 !.github/fixtures/google-services.json
-# Análises locais
+# Anï¿½lises locais
 deps-full.txt
 secrets-replace.txt
 .idea/
+/uploads/servicos/servico_381c2cce-44e9-4a77-ae8b-f289fcf1affe_13590bf5-fd8c-49a0-810c-897a11bbe1ca.jpg

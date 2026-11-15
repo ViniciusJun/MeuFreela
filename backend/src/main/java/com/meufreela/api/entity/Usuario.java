@@ -58,6 +58,12 @@ public class Usuario implements UserDetails {
     @Builder.Default
     private boolean verificado = false;
 
+    // NOVO: Status do KYC
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private StatusKyc statusKyc = StatusKyc.NAO_ENVIADO;
+
     // ============ Campos exclusivos de FREELANCER ============
 
     @Enumerated(EnumType.STRING)

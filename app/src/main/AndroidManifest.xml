@@ -55,6 +55,10 @@
         <activity android:name=".activities.PublicarServicoActivity" android:exported="false" />
         <activity android:name=".activities.DetalheServicoActivity" android:exported="false" />
         <activity android:name=".activities.GerenciarFotosActivity" android:exported="false" />
+<<<<<<< HEAD
+=======
+        <activity android:name=".activities.EnviarKycActivity" android:exported="false" />
+>>>>>>> f5e2371 (feat: implementa fluxo completo de KYC (envio de docs, painel de admin e validacao no app))
 
     </application>
 </manifest>

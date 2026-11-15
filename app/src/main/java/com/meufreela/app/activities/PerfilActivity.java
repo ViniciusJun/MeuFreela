@@ -16,11 +16,10 @@ import com.bumptech.glide.Glide;
 import com.meufreela.app.config.ApiConfig;
 import com.meufreela.app.databinding.ActivityPerfilBinding;
 import com.meufreela.app.models.response.PerfilUsuario;
+import com.meufreela.app.models.response.SolicitacaoKycResponse;
 import com.meufreela.app.network.ApiService;
 import com.meufreela.app.network.RetrofitClient;
 import com.meufreela.app.storage.TokenManager;
-
-import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -71,6 +70,11 @@ public class PerfilActivity extends AppCompatActivity {
             }
         });
 
+        // Ação do botão de KYC
+        binding.botaoVerificarKyc.setOnClickListener(v -> {
+            startActivity(new Intent(this, EnviarKycActivity.class));
+        });
+
         binding.botaoSair.setOnClickListener(v -> confirmarLogout());
         binding.botaoTornarFreelancer.setOnClickListener(v ->
                 startActivity(new Intent(this, TornarFreelancerActivity.class)));
@@ -86,8 +90,7 @@ public class PerfilActivity extends AppCompatActivity {
     private void carregarPerfil() {
         api.meuPerfil().enqueue(new Callback<PerfilUsuario>() {
             @Override
-            public void onResponse(Call<PerfilUsuario> call,
-                                   Response<PerfilUsuario> response) {
+            public void onResponse(Call<PerfilUsuario> call, Response<PerfilUsuario> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     PerfilUsuario u = response.body();
 
@@ -95,6 +98,7 @@ public class PerfilActivity extends AppCompatActivity {
                     binding.editEmail.setText(u.getEmail());
                     binding.textTipo.setText("Tipo de conta: "
                             + ("FREELANCER".equals(u.getTipo()) ? "Freelancer" : "Cliente"));
+
                     binding.textVerificado.setVisibility(
                             u.isVerificado() ? View.VISIBLE : View.GONE);
 
@@ -102,18 +106,24 @@ public class PerfilActivity extends AppCompatActivity {
                             || "FREELANCER".equals(u.getTipo());
                     boolean ehCliente = u.temPapel("CLIENTE")
                             || "CLIENTE".equals(u.getTipo());
+
                     binding.botaoTornarFreelancer.setVisibility(
                             ehFreelancer ? View.GONE : View.VISIBLE);
                     binding.botaoTornarCliente.setVisibility(
                             ehCliente ? View.GONE : View.VISIBLE);
 
-                    String fotoUrl = u.getFotoUrl();
-                    Log.d(TAG, "fotoUrl recebido: [" + fotoUrl + "]");
+                    // --- CORREÇÃO DO KYC AQUI ---
+                    if (!ehFreelancer || u.isVerificado()) {
+                        // Se é cliente, ou se já é verificado, o card NUNCA deve aparecer
+                        binding.cardKyc.setVisibility(View.GONE);
+                    } else {
+                        // Só busca o status se for freelancer não verificado
+                        carregarStatusKyc();
+                    }
 
+                    String fotoUrl = u.getFotoUrl();
                     if (fotoUrl != null && !fotoUrl.isEmpty()) {
                         String urlCompleta = ApiConfig.SERVER_URL_DEV + fotoUrl;
-                        Log.d(TAG, "Carregando Glide: " + urlCompleta);
-
                         Glide.with(PerfilActivity.this)
                                 .load(urlCompleta)
                                 .placeholder(android.R.drawable.ic_menu_myplaces)
@@ -129,6 +139,54 @@ public class PerfilActivity extends AppCompatActivity {
                 Log.e(TAG, "Falha ao carregar perfil", t);
                 Toast.makeText(PerfilActivity.this,
                         "Erro: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void carregarStatusKyc() {
+        api.statusKyc().enqueue(new Callback<SolicitacaoKycResponse>() {
+            @Override
+            public void onResponse(Call<SolicitacaoKycResponse> call, Response<SolicitacaoKycResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    String status = response.body().getStatus();
+
+                    // TRAVA DE SEGURANÇA: Se o status for APROVADO, esconde o card!
+                    if ("APROVADO".equals(status)) {
+                        binding.cardKyc.setVisibility(View.GONE);
+                        binding.textVerificado.setVisibility(View.VISIBLE);
+                        return;
+                    }
+
+                    // Se chegou aqui, o usuário NÃO é verificado. Mostra o card.
+                    binding.cardKyc.setVisibility(View.VISIBLE);
+
+                    switch (status) {
+                        case "NAO_ENVIADO":
+                            binding.textKycStatus.setText("Status: Não enviado");
+                            binding.botaoVerificarKyc.setVisibility(View.VISIBLE);
+                            binding.botaoVerificarKyc.setText("Enviar Documentos");
+                            binding.botaoVerificarKyc.setEnabled(true);
+                            break;
+                        case "EM_ANALISE":
+                            binding.textKycStatus.setText("Status: Em análise");
+                            binding.botaoVerificarKyc.setVisibility(View.GONE);
+                            break;
+                        case "REJEITADO":
+                            String motivo = response.body().getMotivoRejeicao();
+                            binding.textKycStatus.setText("Status: Recusado \nMotivo: " + (motivo != null ? motivo : "Não informado"));
+                            binding.botaoVerificarKyc.setVisibility(View.VISIBLE);
+                            binding.botaoVerificarKyc.setText("Reenviar Documentos");
+                            binding.botaoVerificarKyc.setEnabled(true);
+                            break;
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<SolicitacaoKycResponse> call, Throwable t) {
+                Log.e(TAG, "Falha ao carregar status KYC", t);
+                // Em caso de erro de rede, por segurança, esconde o card para não confundir
+                binding.cardKyc.setVisibility(View.GONE);
             }
         });
     }

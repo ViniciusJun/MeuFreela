@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -123,6 +124,46 @@
                 android:text="🛒 Quero contratar serviços"
                 android:visibility="gone" />
 
+            <!-- CARD KYC -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardKyc"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:visibility="gone"
+                app:cardCornerRadius="8dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Verificação de Identidade"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/textKycStatus"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Status: Não enviado"
+                        android:textColor="#666666" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/botaoVerificarKyc"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="Enviar Documentos" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- BOTÃO SAIR (Fora do card KYC) -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/botaoSair"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
@@ -131,6 +172,7 @@
                 android:layout_marginTop="40dp"
                 android:text="Sair da conta"
                 android:textColor="#F44336" />
+
         </LinearLayout>
     </ScrollView>
 </LinearLayout>
