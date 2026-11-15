@@ -52,7 +52,7 @@ public class SolicitacaoService {
             freelancer = usuarioRepository.findById(req.freelancerId())
                     .orElseThrow(() -> new IllegalArgumentException("Freelancer não encontrado"));
         } else {
-            throw new IllegalArgumentException("Informe o serviço ou o freelancer");
+            throw new IllegalArgumentException("Informe o freelancer ou o serviço");
         }
 
         if (!freelancer.temPapel(Usuario.TipoUsuario.FREELANCER)) {
@@ -63,8 +63,20 @@ public class SolicitacaoService {
             throw new IllegalArgumentException("Você não pode contratar a si mesmo");
         }
 
-        Double precoHora = freelancer.getPrecoHora() != null ? freelancer.getPrecoHora() : 0.0;
-        Double valorTotal = precoHora * req.duracaoHoras();
+        // ============================================================
+        // REGRA DE PREÇO — CORREÇÃO APLICADA AQUI
+        // Contratação via serviço → usa Servico.preco
+        // Contratação direta do freelancer → usa Usuario.precoHora
+        // ============================================================
+        double precoHora;
+        if (servico != null && servico.getPreco() != null) {
+            precoHora = servico.getPreco();
+        } else if (freelancer.getPrecoHora() != null) {
+            precoHora = freelancer.getPrecoHora();
+        } else {
+            precoHora = 0.0;
+        }
+        double valorTotal = precoHora * req.duracaoHoras();
 
         Solicitacao s = Solicitacao.builder()
                 .cliente(cliente)

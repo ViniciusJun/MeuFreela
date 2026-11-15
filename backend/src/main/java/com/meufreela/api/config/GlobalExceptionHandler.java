@@ -34,6 +34,15 @@ public class GlobalExceptionHandler {
                 .body(erro("E-mail ou senha inválidos", 401));
     }
 
+
+
+    @ExceptionHandler(OperacaoNaoPermitidaException.class)
+    public ResponseEntity<Map<String, Object>> handleOperacaoNaoPermitida(
+            OperacaoNaoPermitidaException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of("status", 409, "mensagem", ex.getMessage()));
+    }
+
     /**
      * IllegalArgumentException genérica → 409 Conflict (fallback)
      */

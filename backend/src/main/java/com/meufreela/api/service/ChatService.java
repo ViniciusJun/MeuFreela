@@ -23,20 +23,35 @@ public class ChatService {
     private final UsuarioRepository usuarioRepository;
     private final NotificacaoService notificacaoService;
 
-    @Transactional
-    public MensagemResumo salvar(String emailRemetente, String solicitacaoId, String conteudo) {
-        Usuario remetente = usuarioRepository.findByEmail(emailRemetente)
+    /**
+     * Verifica se o usuário (por email) participa da solicitação como
+     * cliente ou freelancer. Usado tanto pela API REST quanto pelo
+     * WebSocket handshake (que não tem Authentication do Spring).
+     *
+     * Retorna a Solicitacao se participar; lança exceção caso contrário.
+     */
+    public Solicitacao validarParticipacao(String email, String solicitacaoId) {
+        Usuario u = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
 
         Solicitacao s = solicitacaoRepository.findById(solicitacaoId)
                 .orElseThrow(() -> new IllegalArgumentException("Solicitação não encontrada"));
 
-        boolean ehParte = s.getCliente().getId().equals(remetente.getId())
-                || s.getFreelancer().getId().equals(remetente.getId());
+        boolean ehParte = s.getCliente().getId().equals(u.getId())
+                || s.getFreelancer().getId().equals(u.getId());
 
         if (!ehParte) {
             throw new IllegalArgumentException("Você não participa desta conversa");
         }
+        return s;
+    }
+
+    @Transactional
+    public MensagemResumo salvar(String emailRemetente, String solicitacaoId, String conteudo) {
+        Solicitacao s = validarParticipacao(emailRemetente, solicitacaoId);
+        Usuario remetente = s.getCliente().getEmail().equals(emailRemetente)
+                ? s.getCliente()
+                : s.getFreelancer();
 
         Mensagem m = Mensagem.builder()
                 .solicitacao(s)
@@ -45,6 +60,7 @@ public class ChatService {
                 .build();
 
         mensagemRepository.save(m);
+
         Usuario destinatario = s.getCliente().getId().equals(remetente.getId())
                 ? s.getFreelancer()
                 : s.getCliente();
@@ -61,19 +77,7 @@ public class ChatService {
     }
 
     public List<MensagemResumo> historico(String emailSolicitante, String solicitacaoId) {
-        Usuario u = usuarioRepository.findByEmail(emailSolicitante)
-                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
-
-        Solicitacao s = solicitacaoRepository.findById(solicitacaoId)
-                .orElseThrow(() -> new IllegalArgumentException("Solicitação não encontrada"));
-
-        boolean ehParte = s.getCliente().getId().equals(u.getId())
-                || s.getFreelancer().getId().equals(u.getId());
-
-        if (!ehParte) {
-            throw new IllegalArgumentException("Sem permissão para ver esta conversa");
-        }
-
+        Solicitacao s = validarParticipacao(emailSolicitante, solicitacaoId);
         return mensagemRepository.findBySolicitacaoOrderByEnviadaEmAsc(s)
                 .stream().map(MensagemResumo::from).toList();
     }

@@ -10,6 +10,7 @@ import com.meufreela.api.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.meufreela.api.exception.OperacaoNaoPermitidaException;
 
 import java.util.List;
 
@@ -71,7 +72,7 @@ public class ServicoService {
                 .orElseThrow(() -> new IllegalArgumentException("Serviço não encontrado"));
 
         if (!s.getFreelancer().getId().equals(u.getId())) {
-            throw new IllegalArgumentException("Você não é dono deste serviço");
+            throw new OperacaoNaoPermitidaException("Você não é dono deste serviço");
         }
 
         s.setTitulo(req.titulo());
@@ -92,7 +93,7 @@ public class ServicoService {
                 .orElseThrow(() -> new IllegalArgumentException("Serviço não encontrado"));
 
         if (!s.getFreelancer().getId().equals(u.getId())) {
-            throw new IllegalArgumentException("Você não é dono deste serviço");
+            throw new OperacaoNaoPermitidaException("Você não é dono deste serviço");
         }
 
         s.setAtivo(!s.isAtivo());
@@ -109,7 +110,7 @@ public class ServicoService {
                 .orElseThrow(() -> new IllegalArgumentException("Serviço não encontrado"));
 
         if (!s.getFreelancer().getId().equals(u.getId())) {
-            throw new IllegalArgumentException("Você não é dono deste serviço");
+            throw new OperacaoNaoPermitidaException("Você não é dono deste serviço");
         }
 
         servicoRepository.delete(s);

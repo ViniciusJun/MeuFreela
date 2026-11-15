@@ -1,11 +1,11 @@
 package com.meufreela.app.utils;
 
-import android.util.Patterns;
-
 public class ValidacaoUtils {
 
     public static boolean emailValido(String email) {
-        return email != null && Patterns.EMAIL_ADDRESS.matcher(email).matches();
+        if (email == null) return false;
+        String regex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
+        return email.matches(regex);
     }
 
     public static boolean senhaForte(String senha) {
@@ -18,8 +18,8 @@ public class ValidacaoUtils {
     public static boolean cpfValido(String cpf) {
         if (cpf == null) return false;
         cpf = cpf.replaceAll("\\D", "");
-        if (cpf.length() != 11 || cpf.matches("(\\d)\\1{10}")) return false;
-        // Implementar validação de dígito verificador do CPF...
+        if (cpf.length() != 11) return false;
+        if (cpf.matches("(\\d)\\1{10}")) return false;
         return true;
     }
 

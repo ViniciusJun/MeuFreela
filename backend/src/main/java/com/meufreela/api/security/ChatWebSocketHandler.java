@@ -1,13 +1,20 @@
 package com.meufreela.api.security;
 
-import tools.jackson.databind.ObjectMapper;
 import com.meufreela.api.dto.EnviarMensagemRequest;
 import com.meufreela.api.dto.MensagemResumo;
 import com.meufreela.api.service.ChatService;
+
 import lombok.RequiredArgsConstructor;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.*;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
+
+import tools.jackson.databind.ObjectMapper;
 
 import java.net.URI;
 import java.net.URLDecoder;
@@ -20,11 +27,13 @@ import java.util.concurrent.ConcurrentHashMap;
 @RequiredArgsConstructor
 public class ChatWebSocketHandler extends TextWebSocketHandler {
 
+    private static final Logger log = LoggerFactory.getLogger(ChatWebSocketHandler.class);
+
     private final ChatService chatService;
     private final JwtService jwtService;
-    private final ObjectMapper mapper; // ← injetado pelo Spring
+    private final UserDetailsService userDetailsService;
+    private final ObjectMapper mapper;
 
-    // solicitacaoId → sessões conectadas
     private final Map<String, Set<WebSocketSession>> salas = new ConcurrentHashMap<>();
 
     @Override
@@ -33,18 +42,43 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         String solicitacaoId = queryParam(session, "solicitacao");
 
         if (token == null || solicitacaoId == null) {
-            session.close(CloseStatus.BAD_DATA);
+            session.close(CloseStatus.BAD_DATA.withReason("token e solicitacao obrigatórios"));
             return;
         }
 
         try {
             String email = jwtService.extrairUsername(token);
+
+            // CORREÇÃO #1: valida type=access (refresh token de 7 dias não abre WebSocket)
+            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+            if (!jwtService.tokenValido(token, userDetails)) {
+                log.info("WebSocket rejeitado: token inválido/expirado para {}", email);
+                session.close(CloseStatus.NOT_ACCEPTABLE.withReason("Token inválido"));
+                return;
+            }
+
+            // CORREÇÃO #2: valida participação ANTES de entrar na sala (fecha IDOR)
+            // Antes, qualquer usuário autenticado podia escutar qualquer solicitação.
+            chatService.validarParticipacao(email, solicitacaoId);
+
             session.getAttributes().put("email", email);
             session.getAttributes().put("solicitacaoId", solicitacaoId);
 
             salas.computeIfAbsent(solicitacaoId, k -> ConcurrentHashMap.newKeySet())
                     .add(session);
+
+            log.info("WebSocket conectado: {} → solicitação {}", email, solicitacaoId);
+
+        } catch (IllegalArgumentException e) {
+            // Pode ser: usuário não encontrado, solicitação não encontrada,
+            // ou usuário não participa da solicitação.
+            log.info("WebSocket rejeitado ({}): {}", session.getId(), e.getMessage());
+            session.close(CloseStatus.POLICY_VIOLATION.withReason(e.getMessage()));
+
         } catch (Exception e) {
+            // Erros de JWT (exp, assinatura, malformado) caem aqui.
+            log.info("WebSocket rejeitado ({}): token inválido — {}",
+                    session.getId(), e.getMessage());
             session.close(CloseStatus.NOT_ACCEPTABLE);
         }
     }
@@ -54,17 +88,23 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         String email = (String) session.getAttributes().get("email");
         String solicitacaoId = (String) session.getAttributes().get("solicitacaoId");
 
-        if (email == null || solicitacaoId == null) return;
+        if (email == null || solicitacaoId == null) {
+            session.close(CloseStatus.BAD_DATA);
+            return;
+        }
 
         try {
             EnviarMensagemRequest req = mapper.readValue(
                     message.getPayload(), EnviarMensagemRequest.class);
 
+            // salvar() já valida participação internamente
             MensagemResumo salva = chatService.salvar(email, solicitacaoId, req.conteudo());
             String json = mapper.writeValueAsString(salva);
 
             broadcast(solicitacaoId, new TextMessage(json));
         } catch (Exception e) {
+            log.warn("Erro ao processar mensagem de {} em {}: {}",
+                    email, solicitacaoId, e.getMessage());
             session.sendMessage(new TextMessage(
                     "{\"erro\":\"" + e.getMessage().replace("\"", "'") + "\"}"));
         }
@@ -86,7 +126,11 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         for (WebSocketSession s : sessoes) {
             try {
                 if (s.isOpen()) s.sendMessage(msg);
-            } catch (Exception ignored) {}
+            } catch (Exception e) {
+                // CORREÇÃO #3: não engole silenciosamente — loga para diagnóstico
+                log.warn("Falha ao enviar mensagem para sessão {}: {}",
+                        s.getId(), e.getMessage());
+            }
         }
     }
 

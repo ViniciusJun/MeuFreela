@@ -23,6 +23,10 @@ android {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
+
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
     buildToolsVersion '36.0.0'
 }
 
@@ -54,5 +58,6 @@ dependencies {
 
     // Testes
     testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.assertj:assertj-core:3.25.3'
     androidTestImplementation 'androidx.test.ext:junit:1.2.1'
 }

@@ -1,10 +1,16 @@
 package com.meufreela.api.security;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.security.SignatureException;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -31,7 +37,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         final String authHeader = request.getHeader("Authorization");
 
-        // Se não tem header Authorization ou não começa com "Bearer ", segue o fluxo
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
@@ -53,9 +58,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             }
-        } catch (Exception e) {
-            // Token inválido/expirado — não autentica, apenas segue
-            logger.warn("Token JWT inválido: " + e.getMessage());
+            // CORREÇÃO 3: captura apenas exceções de JWT, não qualquer Exception.
+            // Outros erros (ex.: DataAccessException se o banco estiver fora do ar)
+            // devem propagar — senão, o usuário recebe 401 confuso em vez de 500.
+        } catch (ExpiredJwtException | MalformedJwtException | SignatureException e) {
+            // CORREÇÃO 4: logging parametrizado.
+            logger.warn("Token JWT inválido: " + e.getMessage(), e);
         }
 
         filterChain.doFilter(request, response);
