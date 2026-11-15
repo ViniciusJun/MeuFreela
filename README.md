@@ -1,7 +1,7 @@
 # 🚀 MeuFreela
 
 <p align="center">
-  **Conectando pessoas, oportunidades e serviços.**
+  <strong>Conectando pessoas, oportunidades e serviços.</strong>
 </p>
 
 <p align="center">
@@ -9,12 +9,18 @@
 </p>
 
 <p align="center">
-  ![Java](https://img.shields.io/badge/Java-21%2F17-orange?logo=openjdk)
-  ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1.1-6DB33F?logo=springboot)
-  ![Android](https://img.shields.io/badge/Android-Native-3DDC84?logo=android)
-  ![Firebase](https://img.shields.io/badge/Firebase-Integrated-FFCA28?logo=firebase)
-  ![Maven](https://img.shields.io/badge/Maven-Build-C71A36?logo=apachemaven)
-  ![License](https://img.shields.io/badge/License-MIT-blue.svg)
+  <a href="https://github.com/ViniciusJun/MeuFreela/actions/workflows/backend-tests.yml">
+    <img src="https://github.com/ViniciusJun/MeuFreela/actions/workflows/backend-tests.yml/badge.svg" alt="Backend Tests">
+  </a>
+  <a href="https://github.com/ViniciusJun/MeuFreela/actions/workflows/android-build.yml">
+    <img src="https://github.com/ViniciusJun/MeuFreela/actions/workflows/android-build.yml/badge.svg" alt="Android Build">
+  </a>
+  <img src="https://img.shields.io/badge/Java-21%2F17-orange?logo=openjdk" alt="Java">
+  <img src="https://img.shields.io/badge/Spring%20Boot-4.1.1-6DB33F?logo=springboot" alt="Spring Boot">
+  <img src="https://img.shields.io/badge/Android-Native-3DDC84?logo=android" alt="Android">
+  <img src="https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql" alt="PostgreSQL">
+  <img src="https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker" alt="Docker">
+  <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License">
 </p>
 
 <p align="center">
@@ -23,6 +29,8 @@
   <a href="#-tecnologias">Tecnologias</a> •
   <a href="#-funcionalidades">Funcionalidades</a> •
   <a href="#-instalação-e-execução">Instalação</a> •
+  <a href="#-testes">Testes</a> •
+  <a href="#-segurança">Segurança</a> •
   <a href="#-roadmap">Roadmap</a>
 </p>
 
@@ -34,13 +42,13 @@ O **MeuFreela** é uma plataforma mobile desenvolvida com o objetivo de aproxima
 
 A proposta é criar um ambiente digital no qual freelancers possam divulgar seus serviços, construir sua reputação profissional e conquistar novos clientes, enquanto os contratantes encontram profissionais de maneira prática e organizada.
 
-A plataforma busca oferecer uma experiência baseada em três pilares:
+A plataforma se apoia em três pilares:
 
 - **Conectividade:** aproximação entre clientes e profissionais por localização e categorias de serviços.
 - **Confiabilidade:** sistema de avaliações bilaterais para construção de reputação.
 - **Comunicação:** chat em tempo real e notificações para facilitar a interação entre as partes.
 
-O projeto é composto por uma API RESTful desenvolvida em Java com Spring Boot e um aplicativo Android nativo.
+O projeto é composto por uma **API RESTful** em Java 21 + Spring Boot 4 e um **aplicativo Android nativo** em Java 17.
 
 ### 🎯 Objetivos
 
@@ -50,28 +58,26 @@ O projeto é composto por uma API RESTful desenvolvida em Java com Spring Boot e
 - Estabelecer um sistema de reputação baseado em avaliações.
 - Criar uma infraestrutura preparada para futuras funcionalidades financeiras e expansão da plataforma.
 
-<sub>📍 Status: desenvolvimento ativo — MVP.</sub>
+<sub>📍 Status: **MVP funcional** — 82 testes automatizados, CI ativo, deploy via Docker Compose.</sub>
 
 ---
 
 ## 🏗️ Arquitetura
 
-O projeto utiliza uma arquitetura de **monólito modular**, organizada em camadas e com responsabilidades bem definidas.
+O projeto utiliza uma arquitetura de **monólito modular**, organizada em camadas com responsabilidades bem definidas. Essa abordagem foi escolhida considerando o estágio atual do produto: reduz complexidade operacional, facilita a manutenção e mantém a possibilidade de evolução arquitetural conforme o crescimento da aplicação.
 
-Essa abordagem foi escolhida considerando o estágio atual do produto, permitindo reduzir a complexidade operacional, facilitar a manutenção e manter a possibilidade de evolução arquitetural conforme o crescimento da aplicação.
-
----
-
-## Visão Geral
-
-O **MeuFreela** é composto por dois componentes principais:
-
-1. **Backend** — API RESTful em **Java 21 + Spring Boot**, responsável por autenticação, gestão de usuários, solicitações de serviço, avaliações, chat via WebSocket e envio de notificações push.
-2. **Aplicativo Android** — cliente nativo em **Java 17**, consumindo a API via Retrofit e mantendo o chat aberto por WebSocket.
-3. **Testes**: 74 testes (JUnit + Mockito + MockMvc + JUnit4 Android)
-O objetivo do projeto é oferecer uma plataforma confiável para contratação de serviços freelance, com foco em reputação, comunicação direta e (futuramente) garantia de pagamento.
-
----
+    App Android (Java 17)
+    Retrofit + OkHttp + WebSocket
+            │
+            │ HTTPS / WSS
+            ▼
+    Backend Spring Boot 4 (Java 21)
+    Controller → Service → Repository → Entity
+            │
+        ┌───┴───┐
+        ▼       ▼
+    PostgreSQL  Firebase (FCM)
+    (via Flyway)
 
 ### Decisões arquiteturais
 
@@ -79,13 +85,15 @@ O objetivo do projeto é oferecer uma plataforma confiável para contratação d
 |---|---|
 | Monólito modular | Reduz a complexidade inicial e facilita a manutenção. |
 | API RESTful | Padroniza a comunicação entre aplicativo e backend. |
-| JWT Stateless | Permite autenticação sem necessidade de sessão no servidor. |
-| Spring Data JPA | Simplifica o acesso e a persistência dos dados. |
-| H2 Database | Facilita a configuração do ambiente de desenvolvimento. |
-| WebSocket | Permite comunicação bidirecional em tempo real. |
-| Firebase FCM | Responsável pela entrega de notificações push. |
-
-A arquitetura poderá evoluir para serviços independentes caso o crescimento da aplicação justifique essa necessidade.
+| JWT stateless (access + refresh) | Autenticação sem sessão, com rotação de tokens. |
+| Spring Data JPA + Hibernate | Abstração da persistência com tipagem forte. |
+| PostgreSQL (produção) + H2 (dev/testes) | Persistência real em produção; H2 para agilidade em dev e testes. |
+| Flyway (migrations versionadas) | Schema controlado por arquivos SQL versionados no Git. |
+| WebSocket | Comunicação bidirecional em tempo real para o chat. |
+| Firebase FCM | Entrega de notificações push. |
+| Docker Compose | Reprodutibilidade total do ambiente (backend + banco). |
+| GitHub Actions | CI automático em cada push/PR. |
+| Spring Boot Actuator | Health checks e métricas prontas para monitoramento. |
 
 ---
 
@@ -96,31 +104,39 @@ A arquitetura poderá evoluir para serviços independentes caso o crescimento da
 | Tecnologia | Aplicação |
 |---|---|
 | Java 21 LTS | Linguagem principal |
-| Spring Boot 4.1.1 | Framework de desenvolvimento |
-| Spring Web MVC | Construção da API REST |
-| Spring Security | Autenticação e autorização |
-| JWT (JJWT) | Gerenciamento de tokens |
-| BCrypt | Hash de senhas |
-| Spring Data JPA | Persistência de dados |
-| Hibernate | ORM |
-| H2 Database | Banco de desenvolvimento |
-| Spring WebSocket | Comunicação em tempo real |
-| Firebase Admin SDK | Envio de notificações |
-| Maven | Gerenciamento de dependências e build |
-| JUnit 5 | Testes automatizados |
+| Spring Boot 4.1.1 | Framework base |
+| Spring Web MVC | API REST |
+| Spring Security + JWT (JJWT) | Autenticação e autorização |
+| Spring Data JPA + Hibernate | Persistência |
+| Flyway | Migrations versionadas |
+| PostgreSQL 16 | Banco de dados principal |
+| H2 Database | Banco em memória para testes |
+| Spring WebSocket | Chat em tempo real |
+| Firebase Admin SDK | Notificações push |
+| Spring Boot Actuator + Micrometer | Health checks e métricas |
+| Maven | Build e dependências |
+| JUnit 5 + Mockito + AssertJ | Testes |
 
 ### Aplicativo Android
 
 | Tecnologia | Aplicação |
 |---|---|
 | Java 17 | Desenvolvimento mobile |
-| Android SDK | Plataforma Android |
-| Retrofit | Consumo da API REST |
-| Gson | Serialização e desserialização JSON |
-| OkHttp | Comunicação HTTP e WebSocket |
+| Android SDK 35 (minSdk 24) | Plataforma |
+| Retrofit + Gson | Consumo da API REST |
+| OkHttp | HTTP e WebSocket |
 | Firebase Cloud Messaging | Notificações push |
 | EncryptedSharedPreferences | Armazenamento seguro de tokens |
-| Gradle | Gerenciamento de build |
+| ViewBinding | Binding de views |
+| Gradle | Build |
+
+### Infraestrutura
+
+| Tecnologia | Aplicação |
+|---|---|
+| Docker + Docker Compose | Ambiente reproduzível |
+| GitHub Actions | CI/CD |
+| Adminer | UI web para inspeção do banco |
 
 ---
 
@@ -128,82 +144,82 @@ A arquitetura poderá evoluir para serviços independentes caso o crescimento da
 
 ### ✅ Implementadas
 
-- [x] Cadastro de usuários (clientes e freelancers).
-- [x] Autenticação utilizando JWT.
-- [x] Armazenamento seguro de tokens no Android.
-- [x] Criação de solicitações de serviços.
-- [x] Consulta e listagem de solicitações.
-- [x] Avaliações bilaterais entre clientes e freelancers.
-- [x] Chat em tempo real utilizando WebSocket.
-- [x] Notificações push com Firebase Cloud Messaging.
-- [x] Tratamento de exceções com respostas padronizadas.
+- Cadastro de usuários (clientes e freelancers).
+- Autenticação JWT com **access token** (1h) e **refresh token** (7d).
+- Endpoint `/api/auth/refresh` para renovação silenciosa.
+- Armazenamento seguro de tokens no Android (EncryptedSharedPreferences).
+- Publicação de serviços pelos freelancers.
+- Criação e listagem de solicitações (cliente e freelancer).
+- Atualização de status de solicitações com validação de transição.
+- Avaliações bilaterais entre clientes e freelancers.
+- Chat em tempo real via WebSocket (autenticado e com validação de participação).
+- Histórico de mensagens via REST.
+- Notificações push com Firebase Cloud Messaging.
+- Tratamento global de exceções com respostas padronizadas.
+- Health check e métricas via Actuator.
+- Migrations versionadas com Flyway.
 
 ### 🚧 Em desenvolvimento
 
-- [ ] Configuração de perfil profissional.
-- [ ] Portfólio de serviços dos freelancers.
-- [ ] Busca por proximidade geográfica.
-- [ ] Filtros por categoria de serviço.
-- [ ] Filtros por faixa de preço.
+- Configuração avançada de perfil profissional.
+- Portfólio de serviços com múltiplas imagens.
+- Busca por proximidade geográfica.
+- Filtros por categoria e faixa de preço no app.
 
 ### 🔮 Funcionalidades planejadas
 
-- [ ] Migração para PostgreSQL.
-- [ ] Integração com pagamentos.
-- [ ] Sistema de escrow e split de pagamentos.
-- [ ] Verificação de identidade (KYC).
-- [ ] Rastreamento de serviços em tempo real.
-- [ ] Assinatura premium.
-- [ ] Painel administrativo.
+- Integração com pagamentos (Stripe/MercadoPago).
+- Sistema de escrow e split de pagamentos.
+- Verificação de identidade (KYC).
+- Rastreamento de serviços em tempo real.
+- Assinatura premium.
+- Painel administrativo.
 
 ---
 
 ## 📂 Estrutura do repositório
 
-```text
-MeuFreela/
-│
-├── backend/
-│   ├── src/
-│   │   ├── main/
-│   │   │   ├── java/com/meufreela/
-│   │   │   │   ├── config/       # Configurações gerais
-│   │   │   │   ├── controller/  # Endpoints REST
-│   │   │   │   ├── dto/         # Objetos de transferência
-│   │   │   │   ├── exception/   # Tratamento de exceções
-│   │   │   │   ├── model/       # Entidades JPA
-│   │   │   │   ├── repository/  # Camada de persistência
-│   │   │   │   ├── security/    # Autenticação e JWT
-│   │   │   │   └── service/     # Regras de negócio
-│   │   │   │
-│   │   │   └── resources/
-│   │   │       └── application.properties
-│   │   │
-│   │   └── test/                # Testes automatizados
-│   │
-│   └── pom.xml
-│
-├── app/
-│   ├── src/
-│   │   ├── main/
-│   │   │   ├── java/com/meufreela/app/
-│   │   │   │   ├── api/         # Retrofit e WebSocket
-│   │   │   │   ├── model/       # Modelos de dados
-│   │   │   │   ├── ui/          # Activities e Fragments
-│   │   │   │   └── util/        # Classes utilitárias
-│   │   │   │
-│   │   │   └── res/             # Layouts e recursos Android
-│   │   │
-│   │   ├── test/                # Testes unitários
-│   │   └── androidTest/         # Testes instrumentados
-│   │
-│   └── build.gradle
-│
-├── docs/                        # Documentação adicional
-│
-├── README.md
-└── LICENSE
-```
+    MeuFreela/
+    │
+    ├── .github/workflows/          # CI (backend-tests.yml, android-build.yml)
+    │
+    ├── backend/
+    │   ├── Dockerfile              # Build multi-stage
+    │   ├── mvnw / mvnw.cmd
+    │   ├── pom.xml
+    │   ├── src/main/java/com/meufreela/api/
+    │   │   ├── config/             # Security, WebSocket, Actuator, CORS
+    │   │   ├── controller/         # Endpoints REST
+    │   │   ├── dto/                # Request/Response
+    │   │   ├── entity/             # Entidades JPA
+    │   │   ├── exception/          # Tratamento global (@RestControllerAdvice)
+    │   │   ├── repository/         # Spring Data JPA
+    │   │   ├── security/           # JWT, Filter, WebSocket Handler
+    │   │   └── service/            # Regras de negócio
+    │   ├── src/main/resources/
+    │   │   ├── application.properties
+    │   │   ├── application-dev.properties
+    │   │   ├── application-postgres.properties
+    │   │   ├── application-test.properties
+    │   │   └── db/migration/V1__init.sql
+    │   └── src/test/               # 82 testes automatizados
+    │
+    ├── app/                        # Aplicativo Android
+    │   ├── build.gradle
+    │   └── src/main/java/com/meufreela/app/
+    │       ├── activities/
+    │       ├── adapters/
+    │       ├── models/
+    │       ├── network/            # Retrofit + OkHttp
+    │       ├── storage/            # TokenManager
+    │       └── utils/
+    │
+    ├── .env.example
+    ├── .dockerignore
+    ├── .gitignore
+    ├── docker-compose.yml          # Postgres + Backend + Adminer
+    ├── LICENSE
+    └── README.md
 
 ---
 
@@ -211,285 +227,346 @@ MeuFreela/
 
 ### Pré-requisitos
 
-Antes de executar o projeto, certifique-se de possuir:
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (recomendado)
+- [Java JDK 21](https://adoptium.net/) + [Maven](https://maven.apache.org/)
+- [Java JDK 17](https://adoptium.net/) + [Android Studio](https://developer.android.com/studio)
+- Conta no [Firebase](https://firebase.google.com/)
 
-- [Java JDK 21](https://adoptium.net/) — backend.
-- [Java JDK 17](https://adoptium.net/) — ambiente Android.
-- [Apache Maven](https://maven.apache.org/) 3.9 ou superior.
-- [Android Studio](https://developer.android.com/studio).
-- Android SDK e Gradle compatíveis com o projeto.
-- Conta no [Firebase](https://firebase.google.com/).
+### 🐳 Método 1 — Docker Compose (recomendado)
 
-### 1. Clonar o repositório
+Sobe **backend + PostgreSQL + Adminer** com um único comando:
 
-```bash
-git clone https://github.com/ViniciusJun/MeuFreela.git
+    git clone https://github.com/ViniciusJun/MeuFreela.git
+    cd MeuFreela
 
-cd MeuFreela
-```
+    cp .env.example .env
+    # Editar .env e gerar um JWT_SECRET: openssl rand -base64 64
 
-### 2. Executar o backend
+    docker compose up -d
 
-Acesse a pasta do backend:
+    curl http://localhost:8080/actuator/health
 
-```bash
-cd backend
-```
+**Serviços em execução**:
 
-Execute a aplicação utilizando o Maven Wrapper:
+| URL | Serviço |
+|-----|---------|
+| `http://localhost:8080` | Backend (API) |
+| `http://localhost:8080/actuator/health` | Health check |
+| `http://localhost:8081` | Adminer (UI do banco) |
 
-```bash
-./mvnw spring-boot:run
-```
+Para inspecionar o banco no Adminer:
+- **Sistema**: PostgreSQL
+- **Servidor**: `postgres`
+- **Usuário**: `meufreela`
+- **Senha**: `meufreela123`
+- **Base**: `meufreela`
 
-No Windows:
+**Comandos úteis**:
 
-```powershell
-.\mvnw.cmd spring-boot:run
-```
+    docker compose logs -f backend       # logs em tempo real
+    docker compose down                  # parar (mantém dados)
+    docker compose down -v               # parar e apagar dados do banco
+    docker compose up -d --build backend # rebuild após mudança de código
 
-Após a inicialização, a API estará disponível em:
+### 🔧 Método 2 — Local com Maven (desenvolvimento)
 
-```text
-http://localhost:8080
-```
+Requer PostgreSQL rodando em `localhost:5432` com database `meufreela`.
 
-### 3. Executar o aplicativo Android
+    cd backend
 
-1. Abra a pasta `app/` no Android Studio.
-2. Configure o arquivo `google-services.json` fornecido pelo Firebase.
-3. Configure a URL base da API no cliente Retrofit.
-4. Para execução em emulador Android, utilize:
+    # Perfil postgres (padrão)
+    export SPRING_PROFILES_ACTIVE=postgres   # PowerShell: $env:SPRING_PROFILES_ACTIVE="postgres"
+    export JWT_SECRET="<secret-base64-de-64-bytes>"
 
-```text
-http://10.0.2.2:8080/
-```
+    ./mvnw spring-boot:run
 
-5. Execute o aplicativo em um emulador ou dispositivo físico.
+Ou com **H2 em memória** (rápido, sem precisar de Postgres):
 
-> **Importante:** para dispositivos físicos, utilize o endereço IP da máquina que executa o backend. A configuração de comunicação HTTP local deve ser restrita ao ambiente de desenvolvimento.
+    cd backend
+    export SPRING_PROFILES_ACTIVE=dev
+    export JWT_SECRET="<secret>"
+    ./mvnw spring-boot:run
+
+### 📱 App Android
+
+1. Abra a pasta `app/` no **Android Studio**.
+2. Coloque o arquivo `app/google-services.json` (obtido do Firebase Console → Configurações → Seus Apps → Android).
+3. Ajuste a URL base da API em `app/src/main/java/com/meufreela/app/network/ApiConfig.java`:
+    - **Emulador**: `http://10.0.2.2:8080/`
+    - **Dispositivo físico**: `http://<IP-da-máquina>:8080/`
+4. Execute em emulador ou dispositivo físico (`Run ▶`).
+
+> ⚠️ O `google-services.json` **não é versionado**. Cada dev precisa obter o seu no Firebase Console.
 
 ---
 
 ## 🔐 Configuração e variáveis de ambiente
 
-As configurações do backend estão localizadas em:
+### Variáveis obrigatórias
 
-```text
-backend/src/main/resources/application.properties
-```
+| Variável | Descrição | Exemplo |
+|----------|-----------|---------|
+| `JWT_SECRET` | Chave Base64 para assinar JWT (≥ 256 bits) | `openssl rand -base64 64` |
+| `SPRING_PROFILES_ACTIVE` | Perfil ativo | `postgres`, `dev`, `test` |
+| `SPRING_DATASOURCE_URL` | URL JDBC (sobrescreve `postgres` padrão) | `jdbc:postgresql://postgres:5432/meufreela` |
+| `SPRING_DATASOURCE_USERNAME` | Usuário do banco | `meufreela` |
+| `SPRING_DATASOURCE_PASSWORD` | Senha do banco | `meufreela123` |
 
-### Configuração do servidor
+### Arquivos de configuração por perfil
 
-```properties
-server.port=8080
-```
+| Arquivo | Uso |
+|---------|-----|
+| `application.properties` | Base (server port, JWT, Actuator) |
+| `application-dev.properties` | H2 em memória (dev rápido) |
+| `application-postgres.properties` | PostgreSQL (produção/Docker) |
+| `application-test.properties` | Testes (H2 + configs de teste) |
 
-### Banco de dados H2
+### Configuração JWT
 
-```properties
-spring.datasource.url=jdbc:h2:mem:meufreela
-spring.datasource.driver-class-name=org.h2.Driver
-spring.datasource.username=sa
-spring.datasource.password=
-
-spring.jpa.hibernate.ddl-auto=update
-spring.h2.console.enabled=true
-```
-
-### Autenticação JWT
-
-```properties
-jwt.secret=${JWT_SECRET}
-jwt.expiration=86400000
-```
-
-A variável `JWT_SECRET` deve ser configurada no ambiente de execução.
-
-**Segurança:** nunca versione segredos, senhas, tokens ou credenciais de serviços externos. Utilize variáveis de ambiente ou um gerenciador de segredos.
+    jwt.secret=${JWT_SECRET}          # Obrigatório via env
+    jwt.expiration=3600000             # 1 hora (access token)
+    jwt.refresh-expiration=604800000   # 7 dias (refresh token)
 
 ### Firebase
 
-O backend utiliza o Firebase Admin SDK para envio de notificações.
+O backend usa o **Firebase Admin SDK** para push. O arquivo `firebase-service-account.json` deve ser mantido **fora do Git** e disponibilizado via variável de ambiente em produção (`GOOGLE_APPLICATION_CREDENTIALS` ou mount em Docker secrets).
 
-O arquivo `serviceAccountKey.json` deve permanecer fora do controle de versão e ser disponibilizado por meio de configuração segura no ambiente de execução.
+### ⚠️ Segurança de credenciais
+
+Nunca versione:
+- `application-local.properties`, `application-secrets.properties`
+- `.env`, `firebase-service-account.json`, `google-services.json`
+- `*.jks`, `*.keystore`, `*.pem`, `*.key`
+
+Use o `.env.example` como template e **adicione `.env` ao `.gitignore`** (já configurado).
 
 ---
 
 ## 🔌 Endpoints principais
 
-A API disponibiliza os seguintes recursos:
+Todos os endpoints (exceto `/auth/**` e `/actuator/health`) exigem `Authorization: Bearer <access_token>`.
+
+### Autenticação
 
 | Método | Endpoint | Descrição |
-|---|---|---|
-| POST | `/auth/register` | Cadastro de usuário |
-| POST | `/auth/login` | Autenticação e emissão de JWT |
-| GET | `/usuarios/{id}` | Consulta de usuário |
-| POST | `/solicitacoes` | Criação de solicitação |
-| GET | `/solicitacoes` | Listagem de solicitações |
-| POST | `/avaliacoes` | Registro de avaliação |
-| WS | `/ws/chat` | Comunicação em tempo real |
+|--------|----------|-----------|
+| POST | `/api/auth/cadastro` | Cadastro de usuário |
+| POST | `/api/auth/login` | Login + emissão de tokens |
+| POST | `/api/auth/refresh` | Troca de refresh token por novo par |
 
-A documentação interativa da API utilizando OpenAPI/Swagger está planejada para uma próxima etapa.
+### Usuários
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| GET | `/api/usuarios/me` | Perfil do usuário logado |
+| PATCH | `/api/usuarios/me` | Atualização de perfil |
+| POST | `/api/usuarios/tornar-cliente` | Ativa perfil de cliente |
+
+### Serviços
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| GET | `/api/servicos` | Lista serviços (público) |
+| GET | `/api/servicos/{id}` | Detalhe de serviço (público) |
+| POST | `/api/servicos` | Publica novo serviço |
+| PUT | `/api/servicos/{id}` | Atualiza próprio serviço |
+| PATCH | `/api/servicos/{id}/ativo` | Pausa/reativa serviço |
+| DELETE | `/api/servicos/{id}` | Exclui serviço |
+
+### Freelancers
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| GET | `/api/freelancers` | Lista freelancers (público) |
+| GET | `/api/freelancers/{id}` | Detalhe (público) |
+| GET | `/api/freelancers/{id}/avaliacoes` | Avaliações (público) |
+
+### Solicitações
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| POST | `/api/solicitacoes` | Cria solicitação |
+| GET | `/api/solicitacoes/como-cliente` | Lista como cliente |
+| GET | `/api/solicitacoes/como-freelancer` | Lista como freelancer |
+| PATCH | `/api/solicitacoes/{id}/status` | Atualiza status |
+
+### Chat
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| GET | `/api/solicitacoes/{id}/mensagens` | Histórico |
+| POST | `/api/solicitacoes/{id}/mensagens` | Envia mensagem |
+| WS | `/ws/chat?token=<jwt>&solicitacao=<id>` | Chat em tempo real |
+
+### Avaliações
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| POST | `/api/avaliacoes` | Registra avaliação |
+
+### Actuator
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| GET | `/actuator/health` | Health check (público) |
+| GET | `/actuator/metrics` | Métricas (autenticado) |
+| GET | `/actuator/prometheus` | Formato Prometheus (autenticado) |
+
+> A documentação interativa com **OpenAPI/Swagger** está planejada para uma próxima etapa.
 
 ---
 
 ## 🛡️ Segurança
 
-A segurança é considerada um dos pilares fundamentais do MeuFreela, especialmente por se tratar de uma plataforma que manipula informações de usuários e interações entre clientes e profissionais.
+Segurança é pilar fundamental do projeto, tratada em **todas as camadas**.
 
 ### Práticas adotadas
 
-- Hash de senhas utilizando BCrypt com fator de custo 12.
-- Autenticação stateless com JWT.
-- Chave JWT injetada por propriedade de ambiente.
-- Armazenamento de tokens no Android com EncryptedSharedPreferences.
-- Validação de dados de entrada utilizando `@Valid`.
-- Configuração de segurança baseada em Spring Security.
-- Comunicação por WebSocket para chat em tempo real.
+- **Senhas**: BCrypt com fator 12.
+- **JWT stateless** com HMAC-SHA256, incluindo `iss`, `aud`, `jti`, `type` (`access` vs `refresh`) e expiração.
+- **Access token curto** (1h) + **refresh token longo** (7d) com endpoint dedicado `/api/auth/refresh`.
+- **Secret JWT** carregado via variável de ambiente (`JWT_SECRET`), nunca versionado.
+- **WebSocket autenticado**: handshake valida assinatura + expiração + tipo; `validarParticipacao` bloqueia IDOR (só cliente/freelancer da solicitação entra na sala).
+- **H2 Console** restrito a `@Profile("dev")` (`H2SecurityConfig`).
+- **AuthenticationEntryPoint** customizado → 401 (não 403) para requisições não autenticadas.
+- **Autorização por dono** em operações sobre serviços e solicitações (409 para violações).
+- **Armazenamento seguro de tokens no Android** com EncryptedSharedPreferences.
+- **Validação de entrada** com `@Valid` e constraints do Jakarta Validation.
+- **Tratamento global de exceções** com mensagens padronizadas (sem stack trace exposto).
+- **Firebase service account** fora do repositório.
+- **Secret JWT removido do histórico Git** (via `git filter-repo`) + rotacionado.
 
-### Melhorias de segurança planejadas
+### Melhorias de segurança em andamento
 
-- Restringir o console H2 ao perfil de desenvolvimento.
-- Configurar políticas CORS por origem.
-- Implementar rate limiting no endpoint de autenticação.
-- Implementar rotação de segredos JWT.
-- Separar configurações e credenciais por ambiente.
-- Fortalecer os controles de autorização sobre os recursos dos usuários.
+- [ ] Configurar **CORS** explicitamente por origem.
+- [ ] Implementar **rate limiting** no endpoint de login (Bucket4j + Redis).
+- [ ] Adicionar **blacklist de refresh tokens** (Redis) para revogação imediata.
+- [ ] Habilitar **GitHub Secret Scanning** + `push protection`.
+- [ ] **Dependabot** para CVEs em dependências.
+- [ ] **Trivy** para scan de vulnerabilidades na imagem Docker.
 
 ---
 
 ## 🧪 Testes
 
-A estratégia de testes busca garantir a confiabilidade das regras de negócio, da comunicação entre as camadas e do comportamento da aplicação mobile.
+**82 testes automatizados** cobrindo controllers, services, segurança e integração.
 
 ### Backend
 
-Execute os testes com:
+    cd backend
+    ./mvnw test
 
-```bash
-cd backend
+**Cobertura por camada**:
 
-./mvnw test
-```
-
-No Windows:
-
-```powershell
-.\mvnw.cmd test
-```
-
-### Estratégia de testes
-
-| Tipo | Ferramentas |
-|---|---|
-| Testes unitários | JUnit 5 e Mockito |
-| Testes de integração | Spring Boot Test |
-| Testes de persistência | Testcontainers (planejado) |
-| Validação de endpoints | Spring Boot Test |
+| Camada | Testes | Descrição |
+|--------|--------|-----------|
+| `JwtServiceTest` | 12 | Geração, validação, expiração, `type`, `iss`/`aud`, assinatura |
+| `AuthServiceTest` | 8 | Cadastro, login, refresh (rotação, expirado, malformado) |
+| `ServicoServiceTest` | 10 | CRUD, autorização por dono, categoria |
+| `SolicitacaoServiceTest` | 7 | Criação, preço (serviço/freelancer), autorização, status |
+| `AvaliacaoServiceTest` | 9 | Criação, validações, atualização de média |
+| `ChatServiceTest` | 8 | Envio, histórico, participação |
+| `ChatWebSocketHandlerTest` | 9 | Handshake (IDOR, refresh token), mensagens, broadcast |
+| `AuthControllerTest`, `ServicoControllerTest`, `SolicitacaoControllerTest`, `ChatControllerTest` | 30 | Integração REST (MockMvc) |
+| `MeufreelaApiApplicationTests` | 1 | Contexto Spring |
 
 ### Android
 
-Execute os testes unitários:
+    cd app
+    ./gradlew test               # unitários
+    ./gradlew connectedCheck     # instrumentados (requer emulador/dispositivo)
 
-```bash
-cd app
+### CI (GitHub Actions)
 
-./gradlew test
-```
+Cada push/PR em `main`/`develop` dispara:
 
-Para testes instrumentados:
+1. **`backend-tests.yml`** → `./mvnw clean test` (82 testes) + empacotamento JAR
+2. **`android-build.yml`** → `./gradlew assembleDebug` + testes unitários Android
 
-```bash
-./gradlew connectedCheck
-```
-
-Os testes instrumentados exigem um emulador ou dispositivo Android conectado.
+Cache de Maven e Gradle ativo — builds subsequentes em ~40% do tempo inicial.
 
 ---
 
 ## 🗺️ Roadmap
 
-A evolução do MeuFreela está organizada em três etapas principais.
+### ✅ Concluído
 
-### Curto prazo — Qualidade e segurança
+- [x] Autenticação JWT com `iss`, `aud`, `jti`, `type`
+- [x] Refresh token + endpoint `/api/auth/refresh`
+- [x] WebSocket autenticado + autorização por participação (IDOR fechado)
+- [x] Tratamento global de exceções (`@RestControllerAdvice`)
+- [x] Alinhamento de cálculo de preço app ↔ backend
+- [x] Migração para PostgreSQL (produção)
+- [x] Flyway (migrations versionadas)
+- [x] Dockerização (`Dockerfile` + `docker-compose.yml`)
+- [x] Pipeline CI/CD (GitHub Actions)
+- [x] Spring Boot Actuator + Micrometer
+- [x] Remoção do secret JWT do histórico Git + rotação
+- [x] H2 Console restrito a `@Profile("dev")`
+- [x] `@PrePersist` / `@PreUpdate` em timestamps
 
-- [ ] Restringir o console H2 com `@Profile("dev")`.
-- [ ] Configurar CORS explicitamente.
-- [ ] Implementar rate limiting no login.
-- [ ] Adicionar tratamento global com `@RestControllerAdvice`.
-- [ ] Implementar atualização automática de campos `atualizadoEm`.
-- [ ] Separar os dados profissionais em `PerfilFreelancer`.
-- [ ] Documentar endpoints com OpenAPI/Swagger.
+### 🚧 Curto prazo — Hardening
 
-### Médio prazo — Infraestrutura e automação
+- [ ] CORS explícito por origem
+- [ ] Rate limiting no login (Bucket4j + Redis)
+- [ ] OpenAPI/Swagger (SpringDoc)
+- [ ] GitHub Secret Scanning + push protection
+- [ ] Dependabot + Trivy no CI
 
-- [ ] Migrar para PostgreSQL.
-- [ ] Implementar Flyway para versionamento do banco.
-- [ ] Dockerizar o backend.
-- [ ] Criar `docker-compose.yml` com backend e PostgreSQL.
-- [ ] Implementar pipeline CI/CD com GitHub Actions.
-- [ ] Integrar SonarQube e Quality Gate.
-- [ ] Implementar testes de integração com Testcontainers.
-- [ ] Adicionar Spring Boot Actuator e Micrometer.
+### 📈 Médio prazo — Observabilidade e resiliência
 
-### Longo prazo — Escalabilidade e evolução do negócio
+- [ ] Prometheus + Grafana no Compose
+- [ ] Logs estruturados (Logback JSON)
+- [ ] Blacklist de refresh tokens em Redis
+- [ ] Cache com Redis em consultas frequentes
+- [ ] OpenTelemetry (tracing distribuído)
+- [ ] Testcontainers para testes de integração
 
-- [ ] Monitoramento com Prometheus e Grafana.
-- [ ] Logs estruturados.
-- [ ] Observabilidade com OpenTelemetry.
-- [ ] Cache com Redis.
-- [ ] Mensageria com RabbitMQ.
-- [ ] Avaliar integração com Keycloak.
-- [ ] Implementar pagamentos com escrow e split.
-- [ ] Implementar KYC para freelancers.
-- [ ] Adicionar rastreamento em tempo real.
-- [ ] Implementar assinatura premium.
-- [ ] Desenvolver painel administrativo.
+### 🔮 Longo prazo — Evolução do produto
+
+- [ ] Mensageria assíncrona (RabbitMQ)
+- [ ] Avaliação de Keycloak para identidade
+- [ ] Pagamentos com escrow e split (Stripe/MercadoPago)
+- [ ] KYC de freelancers
+- [ ] Rastreamento em tempo real
+- [ ] Assinatura premium
+- [ ] Painel administrativo
+- [ ] Deploy em produção (Railway/Render/VPS)
 
 ---
 
 ## 🤝 Contribuição
 
-Contribuições são bem-vindas!
+Contribuições são bem-vindas. Para manter a qualidade:
 
-Para manter a organização e a qualidade do código, siga o fluxo de contribuição:
-
-1. Abra uma Issue descrevendo o problema ou a funcionalidade proposta.
-2. Crie uma branch a partir da `main`.
-3. Utilize nomes descritivos para as branches.
-4. Faça commits seguindo o padrão Conventional Commits.
-5. Envie um Pull Request explicando as alterações.
-6. Aguarde a revisão do código antes do merge.
+1. Abra uma **Issue** descrevendo o problema ou a proposta.
+2. Crie uma **branch** a partir da `main` com nome descritivo.
+3. Faça commits seguindo **Conventional Commits**.
+4. Envie um **Pull Request** explicando as alterações.
+5. Aguarde **code review** antes do merge. CI precisa estar verde.
 
 ### Padrão de branches
 
-```text
-feature/nova-funcionalidade
-fix/correcao-de-bug
-docs/atualizacao-readme
-refactor/melhoria-arquitetural
-test/novos-testes
-```
+    feature/nova-funcionalidade
+    fix/correcao-de-bug
+    docs/atualizacao-readme
+    refactor/melhoria-arquitetural
+    test/novos-testes
 
 ### Conventional Commits
 
-```text
-feat: adiciona funcionalidade de busca
-fix: corrige autenticação de usuário
-docs: atualiza documentação
-refactor: reorganiza camada de serviços
-test: adiciona testes de integração
-chore: atualiza dependências
-```
+    feat: adiciona endpoint de busca por categoria
+    fix: corrige expiração do refresh token
+    docs: atualiza instruções de deploy
+    refactor: extrai validação de participação no chat
+    test: cobre cenário de autorização por dono
+    chore: atualiza dependências Spring Boot
 
 ---
 
 ## 📄 Licença
 
-Este projeto está licenciado sob a licença MIT.
-
-Consulte o arquivo [LICENSE](LICENSE) para obter mais informações.
+Este projeto está licenciado sob a **licença MIT**. Consulte o arquivo [LICENSE](LICENSE) para mais informações.
 
 ---
 
@@ -505,9 +582,9 @@ Consulte o arquivo [LICENSE](LICENSE) para obter mais informações.
 <p align="center">
   Desenvolvido com ☕ e tecnologia.
   <br>
-  **MeuFreela — aproximando talentos e oportunidades.**
+  <strong>MeuFreela — aproximando talentos e oportunidades.</strong>
 </p>
 
 <p align="center">
-  <sub>Projeto em desenvolvimento contínuo. Novas funcionalidades, melhorias arquiteturais e atualizações serão documentadas conforme a evolução da plataforma.</sub>
+  <sub>Projeto em desenvolvimento contínuo. Decisões arquiteturais são documentadas à medida que amadurecem.</sub>
 </p>
