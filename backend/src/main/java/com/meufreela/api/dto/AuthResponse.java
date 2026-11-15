@@ -15,7 +15,8 @@ public record AuthResponse(
             String email,
             String tipo,
             boolean verificado,
-            List<String> papeis
+            List<String> papeis,     // ← faltava esta vírgula
+            String fotoUrl
     ) {
         public static UsuarioDto from(Usuario u) {
             return new UsuarioDto(
@@ -24,7 +25,8 @@ public record AuthResponse(
                     u.getEmail(),
                     u.getTipo().name(),
                     u.isVerificado(),
-                    u.getPapeis().stream().map(Enum::name).toList()
+                    u.getPapeis().stream().map(Enum::name).toList(),
+                    u.getFotoUrl()    // ← faltava passar o fotoUrl
             );
         }
     }

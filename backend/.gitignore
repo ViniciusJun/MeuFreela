@@ -38,3 +38,9 @@ google-services.json
 application-local.properties
 application-secrets.properties
 
+uploads/
+
+# Variáveis de ambiente
+.env
+.env.*
+!.env.example

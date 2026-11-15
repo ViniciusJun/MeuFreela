@@ -105,6 +105,24 @@
 		</dependency>
 
 		<!-- ============================================================
+     		OBSERVABILIDADE
+     		============================================================ -->
+
+		<!-- Actuator: /actuator/health, /actuator/info, /actuator/metrics -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+
+		<!-- Micrometer + Prometheus: expõe /actuator/prometheus no formato
+             consumível pelo Prometheus e visualizável no Grafana -->
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-registry-prometheus</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+
+		<!-- ============================================================
              DRIVERS DE BANCO DE DADOS
              ============================================================ -->
 
@@ -183,6 +201,31 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webmvc-test</artifactId>
 			<scope>test</scope>
+		</dependency>
+
+		<!-- ============================================================
+     		MIGRATIONS — Flyway
+     		============================================================ -->
+
+		<!-- Flyway core: gerencia migrations -->
+		<dependency>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-core</artifactId>
+		</dependency>
+
+		<!-- Flyway + PostgreSQL: dialeto de migrations para Postgres.
+             Sem isso, Flyway falha com "Unsupported Database: PostgreSQL 16.x". -->
+		<dependency>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-database-postgresql</artifactId>
+		</dependency>
+
+		<!-- Spring Boot 4 modularizou autoconfigurações.
+     		Este starter inclui o módulo de autoconfiguração do Flyway,
+     		ausente no Boot 4 ao adicionar apenas flyway-core. -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-flyway</artifactId>
 		</dependency>
 
 	</dependencies>

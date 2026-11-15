@@ -6,6 +6,7 @@ import com.meufreela.api.entity.Usuario;
 public record FreelancerResumo(
         String id,
         String nome,
+        String fotoUrl,
         CategoriaServico categoria,
         String descricao,
         Double precoHora,
@@ -15,8 +16,14 @@ public record FreelancerResumo(
 ) {
     public static FreelancerResumo from(Usuario u) {
         return new FreelancerResumo(
-                u.getId(), u.getNome(), u.getCategoria(), u.getDescricao(),
-                u.getPrecoHora(), u.getAvaliacaoMedia(), u.getTotalServicos(),
+                u.getId(),
+                u.getNome(),
+                u.getFotoUrl() != null ? u.getFotoUrl() : "",
+                u.getCategoria(),
+                u.getDescricao(),
+                u.getPrecoHora(),
+                u.getAvaliacaoMedia(),
+                u.getTotalServicos(),
                 u.isVerificado()
         );
     }

@@ -6,11 +6,13 @@ public class LoginResponse {
     private String token;
     private String refreshToken;
     private Usuario usuario;
+    private String fotoUrl;
 
     // getters
     public String getToken() { return token; }
     public String getRefreshToken() { return refreshToken; }
     public Usuario getUsuario() { return usuario; }
+    public String getFotoUrl() { return fotoUrl; }
 
     public static class Usuario {
         private String id;

@@ -95,6 +95,16 @@ public class DetalheServicoActivity extends AppCompatActivity {
         binding.textCategoria.setText(rotuloCategoria(s.getCategoria()));
         double preco = s.getPreco() != null ? s.getPreco() : 0;
         binding.textPreco.setText(String.format(Locale.getDefault(), "R$ %.0f/h", preco));
+
+        String fotoPath = s.getFreelancerFotoUrl();
+        if (fotoPath != null && !fotoPath.isEmpty()) {
+            String urlCompleta = com.meufreela.app.config.ApiConfig.SERVER_URL_DEV + fotoPath;
+            com.bumptech.glide.Glide.with(this)
+                    .load(urlCompleta)
+                    .placeholder(android.R.drawable.ic_menu_myplaces)
+                    .circleCrop()
+                    .into(binding.imageFreelancer);
+        }
     }
 
     private String rotuloCategoria(String c) {

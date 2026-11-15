@@ -6,6 +6,8 @@ public class ApiConfig {
 
     // Para testes locais no emulador, 10.0.2.2 = localhost da sua máquina
     public static final String BASE_URL_DEV = "http://10.0.2.2:8080/api/";
+    // URL base do servidor (sem o /api), para servir uploads
+    public static final String SERVER_URL_DEV = "http://10.0.2.2:8080";
 
     public static final int TIMEOUT_SEGUNDOS = 30;
     public static final String WS_URL_DEV = "ws://10.0.2.2:8080/ws/chat";

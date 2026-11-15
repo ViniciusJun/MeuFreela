@@ -31,6 +31,9 @@ public class Usuario implements UserDetails {
     @Column(length = 500)
     private String fcmToken;
 
+    @Column(length = 500)
+    private String fotoUrl;
+
     @Column(nullable = false)
     private String nome;
 

@@ -1,0 +1,41 @@
+# ============================================================
+# .dockerignore — exclui arquivos do contexto de build
+# ============================================================
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+
+# Build backend
+backend/target/
+backend/.mvn/wrapper/maven-wrapper.jar
+
+# Build Android
+app/build/
+.gradle/
+local.properties
+
+# Segredos
+.env
+*.env
+application-local.properties
+application-secrets.properties
+google-services.json
+firebase-service-account.json
+*.jks
+*.keystore
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Documentação e CI (não precisam ir pro contexto)
+README.md
+.github/
+docs/

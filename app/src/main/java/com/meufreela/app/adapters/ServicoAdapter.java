@@ -79,6 +79,20 @@ public class ServicoAdapter extends RecyclerView.Adapter<ServicoAdapter.VH> {
         }
 
         h.binding.getRoot().setOnClickListener(v -> acoes.onServicoClick(s));
+
+        // Foto do freelancer (se vier)
+        String fotoPath = s.getFreelancerFotoUrl();
+        if (fotoPath != null && !fotoPath.isEmpty()) {
+            String urlCompleta = com.meufreela.app.config.ApiConfig.SERVER_URL_DEV + fotoPath;
+            com.bumptech.glide.Glide.with(h.binding.getRoot().getContext())
+                    .load(urlCompleta)
+                    .placeholder(android.R.drawable.ic_menu_myplaces)
+                    .circleCrop()
+                    .into(h.binding.imageFreelancerFoto);
+        } else {
+            h.binding.imageFreelancerFoto.setImageResource(
+                    android.R.drawable.ic_menu_myplaces);
+        }
     }
 
     @Override

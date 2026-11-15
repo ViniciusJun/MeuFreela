@@ -99,3 +99,6 @@ Thumbs.db
 .docker/
 
 !.github/fixtures/google-services.json
+# Análises locais
+deps-full.txt
+secrets-replace.txt

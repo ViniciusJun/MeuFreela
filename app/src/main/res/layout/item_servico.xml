@@ -14,10 +14,22 @@
         android:orientation="vertical"
         android:padding="14dp">
 
+        <!-- Linha 1: Avatar + Título + Status -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:id="@+id/imageFreelancerFoto"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="10dp"
+                android:background="#E0E0E0"
+                android:contentDescription="Foto do freelancer"
+                android:scaleType="centerCrop"
+                android:src="@android:drawable/ic_menu_myplaces" />
 
             <TextView
                 android:id="@+id/textTitulo"
@@ -36,6 +48,7 @@
                 android:paddingVertical="4dp" />
         </LinearLayout>
 
+        <!-- Linha 2: Nome do freelancer -->
         <TextView
             android:id="@+id/textFreelancer"
             android:layout_width="match_parent"
@@ -44,6 +57,7 @@
             android:textSize="12sp"
             android:textColor="#666666" />
 
+        <!-- Linha 3: Descrição -->
         <TextView
             android:id="@+id/textDescricao"
             android:layout_width="match_parent"
@@ -53,6 +67,7 @@
             android:maxLines="2"
             android:ellipsize="end" />
 
+        <!-- Linha 4: Categoria + Preço -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

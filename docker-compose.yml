@@ -1,0 +1,111 @@
+# ============================================================
+# MeuFreela — Stack de desenvolvimento/produção
+# ============================================================
+# Serviços:
+#   - postgres: banco de dados (persistente via volume)
+#   - backend:  API Spring Boot (build local via Dockerfile)
+#   - adminer:  interface web para inspecionar o banco (opcional)
+#
+# Uso:
+#   docker compose up -d           # sobe tudo em background
+#   docker compose logs -f backend # acompanha logs do backend
+#   docker compose down            # para e remove (mantém volume do banco)
+#   docker compose down -v         # para e remove TUDO (inclui dados)
+# ============================================================
+
+services:
+
+  # ------------------------------------------------------------
+  # POSTGRESQL — banco de dados
+  # ------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: meufreela-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: meufreela
+      POSTGRES_USER: meufreela
+      POSTGRES_PASSWORD: meufreela123
+      TZ: America/Sao_Paulo
+    ports:
+      # Apenas expõe no host para inspeção com DBeaver/pgAdmin local.
+      # Em produção, remova o ports (só o backend acessa via rede interna).
+      - "5432:5432"
+    volumes:
+      - meufreela_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U meufreela -d meufreela"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - meufreela-net
+
+  # ------------------------------------------------------------
+  # BACKEND — API Spring Boot
+  # ------------------------------------------------------------
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: meufreela-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy    # espera o Postgres ficar pronto
+    environment:
+      # Profile ativo
+      SPRING_PROFILES_ACTIVE: postgres, seed
+
+      # Conexão com Postgres — note o hostname "postgres" (nome do serviço)
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/meufreela
+      SPRING_DATASOURCE_USERNAME: meufreela
+      SPRING_DATASOURCE_PASSWORD: meufreela123
+
+      # JWT — lido do arquivo .env (não versionado)
+      JWT_SECRET: ${JWT_SECRET}
+
+      # Firebase (opcional — se não tiver, NotificacaoService loga warning e segue)
+      # FIREBASE_SERVICE_ACCOUNT_PATH: /run/secrets/firebase.json
+
+      TZ: America/Sao_Paulo
+    ports:
+      - "8080:8080"
+    networks:
+      - meufreela-net
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+
+  # ------------------------------------------------------------
+  # ADMINER — UI web para inspecionar o banco (opcional)
+  # ------------------------------------------------------------
+  # Acesse http://localhost:8081
+  # Sistema: PostgreSQL
+  # Servidor: postgres
+  # Usuário:  meufreela
+  # Senha:    meufreela123
+  # Base:     meufreela
+  # ------------------------------------------------------------
+  adminer:
+    image: adminer:latest
+    container_name: meufreela-adminer
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    ports:
+      - "8081:8080"
+    networks:
+      - meufreela-net
+
+volumes:
+  meufreela_pgdata:
+    driver: local
+
+networks:
+  meufreela-net:
+    driver: bridge

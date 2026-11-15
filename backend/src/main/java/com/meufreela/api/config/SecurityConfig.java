@@ -41,9 +41,19 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/freelancers/**").permitAll()
                         .requestMatchers("/ws/chat/**").permitAll()
+                        .requestMatchers("/uploads/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/servicos/**").permitAll()
-                        // ATENÇÃO: H2 console NÃO deve ficar aqui. Foi movido para
-                        // H2SecurityConfig com @Profile("dev") — ver bloco abaixo.
+
+                        // ============================================================
+                        // OBSERVABILIDADE
+                        // ============================================================
+                        // /actuator/health é público (load balancer e Docker usam)
+                        .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
+                        // /actuator/info é público (nome da aplicação, versão — não sensível)
+                        .requestMatchers("/actuator/info").permitAll()
+                        // /actuator/metrics e /actuator/prometheus exigem autenticação
+                        .requestMatchers("/actuator/**").authenticated()
+
                         .anyRequest().authenticated()
                 )
                 // CORREÇÃO 1: força 401 (não 403) quando não há autenticação válida.

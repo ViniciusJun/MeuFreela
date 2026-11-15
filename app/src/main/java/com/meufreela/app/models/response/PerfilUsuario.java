@@ -7,6 +7,7 @@ public class PerfilUsuario {
     private String nome;
     private String email;
     private String tipo;
+    private String fotoUrl;
     private boolean verificado;
     private List<String> papeis;
 
@@ -16,7 +17,7 @@ public class PerfilUsuario {
     public String getTipo() { return tipo; }
     public boolean isVerificado() { return verificado; }
     public List<String> getPapeis() { return papeis; }
-
+    public String getFotoUrl() { return fotoUrl; }
     public boolean temPapel(String papel) {
         return papeis != null && papeis.contains(papel);
     }
