@@ -75,10 +75,7 @@ services:
 
     volumes:
       - ./uploads:/app/uploads
-<<<<<<< HEAD
-=======
       - ./private_uploads:/app/private_uploads
->>>>>>> f5e2371 (feat: implementa fluxo completo de KYC (envio de docs, painel de admin e validacao no app))
 
     networks:
       - meufreela-net

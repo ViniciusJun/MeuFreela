@@ -21,7 +21,6 @@ public class UploadService {
     private static final String PRIVATE_UPLOAD_DIR = "private_uploads";
 
     private static final long MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
-    private static final int MAX_FOTOS_POR_SERVICO = 5;
     private static final Set<String> TIPOS_PERMITIDOS = Set.of(
             "image/jpeg", "image/png", "image/webp"
     );
@@ -81,23 +80,6 @@ public class UploadService {
         return nomeArquivo;
     }
 
-    public String salvarFotoServico(String servicoId, MultipartFile file) throws IOException {
-        validarImagem(file);
-
-        String extensao = extensaoDoTipo(file.getContentType());
-        // UUID garante nome único — sem colisão mesmo com uploads concorrentes
-        String nomeArquivo = "servico_" + servicoId + "_"
-                + java.util.UUID.randomUUID() + extensao;
-
-        Path pasta = Paths.get(UPLOAD_DIR, "servicos");
-        Files.createDirectories(pasta);
-        Path destino = pasta.resolve(nomeArquivo);
-
-        Files.copy(file.getInputStream(), destino, StandardCopyOption.REPLACE_EXISTING);
-        log.info("Foto de serviço salva: {}", destino);
-
-        return "/uploads/servicos/" + nomeArquivo;
-    }
     private void validarImagem(MultipartFile file) {
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("Arquivo vazio");

@@ -18,7 +18,6 @@ import com.meufreela.app.models.response.Solicitacao;
 import com.meufreela.app.models.response.SolicitacaoKycResponse;
 
 
-
 import okhttp3.MultipartBody;
 import okhttp3.ResponseBody;
 
@@ -131,9 +130,6 @@ public interface ApiService {
     Call<Servico> removerFotoServico(
             @Path("id") String servicoId,
             @Query("url") String url);
-<<<<<<< HEAD
-}
-=======
 
     @Multipart
     @POST("usuarios/kyc")
@@ -145,4 +141,3 @@ public interface ApiService {
     @GET("usuarios/kyc")
     Call<SolicitacaoKycResponse> statusKyc();
 }
->>>>>>> f5e2371 (feat: implementa fluxo completo de KYC (envio de docs, painel de admin e validacao no app))
